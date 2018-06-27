@@ -45,7 +45,7 @@ int main()
 	GenerateInttables();
 	FILE* jpeg;
 	uint8_t* buffer;
-	uint64_t* bufferRS;
+	uint8_t* bufferRS;
 	
 	uint8_t beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
 	uint8_t encbeacon[64];
@@ -70,7 +70,7 @@ int main()
 
 		//printf("Filelen: %d\n",filelen);
 		buffer = (uint8_t*)malloc(filelen+100); // Enough memory for file + \0
-		bufferRS = (uint64_t*)malloc(filelen*8+96);
+		bufferRS = (uint8_t*)malloc(filelen*8+96);
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
 		
@@ -92,8 +92,8 @@ int main()
 		write(uart0_filestream, (const void*) encbeacon,64);
 		//HAL_Delay(500);
 		uint8_t filelenH[16];
-		RS152Code((filelen&0xff00)>>8),&filelenH[8]);
-		RS152Code(filelen&0xff,&(filelenH));
+		RS152Code((filelen&0xff00)>>8,&(filelenH[8]));
+		RS152Code(filelen&0xff,filelenH);
 		write(uart0_filestream, (const void*) filelenH,16);
 		
 		FILE* out = fopen ("tx.jpg","wb");
