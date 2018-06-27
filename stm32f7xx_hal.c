@@ -1,6 +1,7 @@
 #include "stm32f7xx_hal.h"
 
 void MX_SPI5_Init() {
+	bcm2835_init();
 	bcm2835_spi_begin();
 	
 	//Set CS pins polarity to low
@@ -14,21 +15,21 @@ void MX_SPI5_Init() {
 }
 
 void MX_GPIO_Init() {
-	bcm2835_gpio_fsel(DC_PIN, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set_pud(DC_PIN, BCM2835_GPIO_PUD_UP);
+	bcm2835_gpio_fsel(LCD_DC_PIN, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_set_pud(LCD_DC_PIN, BCM2835_GPIO_PUD_UP);
 }
 
 
-void HAL_SPI_Transmit(unsigned char* data, int len, int timeout)
+void HAL_SPI_Transmit(char* data, int len, int timeout)
 {
-	bcm2835_spi_transfern(&data, len);
+	bcm2835_spi_transfern(data, len);
 }
 
-void HAL_GPIO_WritePin(unsigned int pin, GPIO_State state) {
-	bcm2835_gpio_write(pin, state) 
+void HAL_GPIO_WritePin(unsigned int pin, unsigned int state) {
+	bcm2835_gpio_write(pin, state);	
 }
 
 void HAL_Delay(int ms) {
 	clock_t start_time = clock(); 
-    while (clock() < start_time + milli_seconds) ;
+    while (clock() < start_time + ms) ;
 }
