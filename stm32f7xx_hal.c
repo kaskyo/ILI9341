@@ -8,7 +8,7 @@ void MX_SPI5_Init() {
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, 0);
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, 0);
 
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_512);
+	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_8);
 
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
@@ -18,6 +18,7 @@ void MX_GPIO_Init() {
 	wiringPiSetup();
 	pinMode (LCD_DC_PIN, OUTPUT);
 	pinMode (LCD_RST_PIN, OUTPUT);
+	pinMode (CS_Pin, OUTPUT);
 }
 
 
@@ -31,6 +32,5 @@ void HAL_GPIO_WritePin(unsigned int pin, unsigned int state) {
 }
 
 void HAL_Delay(int ms) {
-	clock_t start_time = clock(); 
-    while (clock() < start_time + ms) ;
+	bcm2835_delay(ms);
 }
