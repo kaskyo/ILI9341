@@ -8,13 +8,14 @@ void MX_SPI5_Init() {
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, 0);
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, 0);
 
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);
+	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_512);
 
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
 }
 
 void MX_GPIO_Init() {
+	wiringPiSetup();
 	pinMode (LCD_DC_PIN, OUTPUT);
 	pinMode (LCD_RST_PIN, OUTPUT);
 }

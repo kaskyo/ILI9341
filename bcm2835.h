@@ -1165,8 +1165,8 @@ typedef enum
 
 /* Historical name compatibility */
 #ifndef BCM2835_NO_DELAY_COMPATIBILITY
-#define delay(x) bcm2835_delay(x)
-#define delayMicroseconds(x) bcm2835_delayMicroseconds(x)
+//#define delay(x) bcm2835_delay(x)
+//#define delayMicroseconds(x) bcm2835_delayMicroseconds(x)
 #endif
 
 #ifdef __cplusplus
