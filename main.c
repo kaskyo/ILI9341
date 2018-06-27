@@ -11,8 +11,10 @@
 
 #include <jpeglib.h>
 
-unsigned long bmp_size;
-unsigned char *bmp_buffer;
+#include <stdlib.h>
+
+
+unsigned char *rgb565_buffer;
 
 void readJPG(char* fn) {
 	
@@ -22,10 +24,10 @@ void readJPG(char* fn) {
 	sprintf(syslog_prefix, "%s", fn);
 	openlog(syslog_prefix, LOG_PERROR | LOG_PID, LOG_USER);
 
-	if (argc != 2) {
+	/*if (argc != 2) {
 		fprintf(stderr, "USAGE: %s filename.jpg\n", fn);
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
 	// Variables for the source jpg
 	struct stat file_info;
@@ -39,7 +41,8 @@ void readJPG(char* fn) {
 	// Variables for the output buffer, and how long each row is
 
 	int row_stride, width, height, pixel_size;
-
+	unsigned long bmp_size;
+	unsigned char *bmp_buffer;
 
 	// Load the jpeg data from a file into a memory buffer for 
 	// the purpose of this demonstration.
@@ -54,7 +57,7 @@ void readJPG(char* fn) {
 	jpg_size = file_info.st_size;
 	jpg_buffer = (unsigned char*) malloc(jpg_size + 100);
 
-	int fd = open(argv[1], O_RDONLY);
+	int fd = open(fn, O_RDONLY);
 	i = 0;
 	while (i < jpg_size) {
 		rc = read(fd, jpg_buffer + i, jpg_size - i);
@@ -169,6 +172,27 @@ void readJPG(char* fn) {
 	jpeg_destroy_decompress(&cinfo);
 	// And free the input buffer
 	free(jpg_buffer);
+	
+	unsigned char r,g,b,r5,g6,b5,bt1,bt2;
+
+	
+	for (int i=0; i<width*height; i++)
+	{
+		r = bmp_buffer[i*3];
+		g = bmp_buffer[i*3+1];
+		b = bmp_buffer[i*3+2];
+		r5 = (unsigned char)((uint16_t)r*31/255);
+		g6 = (unsigned char)((uint16_t)g*63/255);
+		b5 = (unsigned char)((uint16_t)b*32/255);
+		
+		bt1 = (r5 << 3) | ((g6 >> 3) & 0x07);
+		bt2 = ((g6 << 5) & 0xE0) | (b5 & 0x1F);
+		
+		rgb565_buffer[i*2] = bt1;
+		rgb565_buffer[i*2+1] = bt2;
+	}
+
+	free(bmp_buffer);
 }
 
 int main()
@@ -186,5 +210,12 @@ int main()
 	ILI9341_Draw_Text("XYU",10,10,BLACK,1,RED);
 	printf("Done\n");
 	HAL_Delay(1000);
-	ILI9341_Draw_Image((const char*)snow_tiger,SCREEN_VERTICAL_2);
+	rgb565_buffer = (unsigned char*)malloc(320*240*2);
+	for (;;) {
+		system("raspistill -o 1.jpg -w 320 -h 240 -q 30 -t 1 -n");
+		readJPG("./1.jpg");
+
+		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+	}
+	free(rgb565_buffer);
 }

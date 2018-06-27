@@ -106,7 +106,7 @@
 //#define	LCD_RST_PIN								RST_Pin
 
 
-#define BURST_MAX_SIZE 	500 // (320*240*2)
+#define BURST_MAX_SIZE 500 // (320*240*2)
 
 #define BLACK       0x0000      
 #define NAVY        0x000F      
