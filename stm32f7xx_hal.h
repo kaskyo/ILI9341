@@ -2,11 +2,12 @@
 
 #include "bcm2835.h"
 #include <time.h>
+#include <wiringPi.h>
 
-#define	GPIO_PIN_RESET 0
-#define	GPIO_PIN_SET 1
-#define LCD_DC_PIN RPI_BPLUS_GPIO_J8_05
-#define LCD_RST_PIN RPI_BPLUS_GPIO_J8_07
+#define	GPIO_PIN_RESET LOW
+#define	GPIO_PIN_SET HIGH
+#define LCD_DC_PIN 0
+#define LCD_RST_PIN 1
 
 void MX_SPI5_Init();
 

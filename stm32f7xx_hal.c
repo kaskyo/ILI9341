@@ -15,8 +15,8 @@ void MX_SPI5_Init() {
 }
 
 void MX_GPIO_Init() {
-	bcm2835_gpio_fsel(LCD_DC_PIN, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set_pud(LCD_DC_PIN, BCM2835_GPIO_PUD_UP);
+	pinMode (LCD_DC_PIN, OUTPUT);
+	pinMode (LCD_RST_PIN, OUTPUT);
 }
 
 
@@ -26,7 +26,7 @@ void HAL_SPI_Transmit(char* data, int len, int timeout)
 }
 
 void HAL_GPIO_WritePin(unsigned int pin, unsigned int state) {
-	bcm2835_gpio_write(pin, state);	
+	digitalWrite(pin, state);	
 }
 
 void HAL_Delay(int ms) {
