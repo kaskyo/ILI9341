@@ -84,7 +84,9 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// so it's likely you'll want to replace it or supplement it with
 	// your own.
 	cinfo.err = jpeg_std_error(&jerr);	
+	printf("cinfo.err = jpeg_std_error(&jerr);	\n");
 	jpeg_create_decompress(&cinfo);
+	printf("jpeg_create_decompress(&cinfo);\n");
 
 
 	//syslog(LOG_INFO, "Proc: Set memory buffer as source");
@@ -98,6 +100,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// implementation of the standard jpeg_mem_src and jpeg_stdio_src 
 	// managers as examples to work from.
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
+	printf("jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);\n");
 
 
 	//syslog(LOG_INFO, "Proc: Read the JPEG header");
@@ -105,6 +108,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// the cinfo struct output fields, but will indicate if the
 	// jpeg is valid.
 	rc = jpeg_read_header(&cinfo, TRUE);
+	printf("rc = jpeg_read_header(&cinfo, TRUE);\n");
 
 	if (rc != 1) {
 		//syslog(LOG_ERR, "File does not seem to be a normal JPEG");
@@ -116,20 +120,27 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// and can then allocate your output bitmap buffers for
 	// each scanline.
 	jpeg_start_decompress(&cinfo);
+	printf("jpeg_start_decompress(&cinfo);\n");
 	
 	width = cinfo.output_width;
+	printf("width = cinfo.output_width;\n");
 	height = cinfo.output_height;
+	printf("height = cinfo.output_height;\n");
 	pixel_size = cinfo.output_components;
+	printf("pixel_size = cinfo.output_components;\n");
 
 	//syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
 	//		width, height, pixel_size);
 
 	bmp_size = width * height * pixel_size;
+	printf("bmp_size = width * height * pixel_size;\n");
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
+	printf("bmp_buffer = (unsigned char*) malloc(bmp_size);\n");
 
 	// The row_stride is the total number of bytes it takes to store an
 	// entire scanline (row). 
 	row_stride = width * pixel_size;
+	printf("row_stride = width * pixel_size;\n");
 
 
 	//syslog(LOG_INFO, "Proc: Start reading scanlines");
