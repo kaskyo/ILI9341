@@ -15,6 +15,8 @@
 
 #include <termios.h>		//Used for UART
 
+#include <time.h>
+
 unsigned char *rgb565_buffer;
 
 void readJPG(char* fn) {
@@ -259,8 +261,8 @@ int main()
 	HAL_Delay(1000);
 */	//FILE* uart = fopen("/dev/serial0","wb");
 	InitUART();
-	//FILE* jpeg;
-	//char* buffer;
+	FILE* jpeg;
+	char* buffer;
 	char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
 	for (;;) {
 
@@ -268,45 +270,54 @@ int main()
 		readJPG("/home/pi/ILI9341/1.jpg");
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		/*
-		printf("Capturing...");
+		clock_t begin = clock();
+		//printf("Capturing...");
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
-		printf("Done\n");
-		HAL_Delay(300);
-		*/
+		//printf("Done\n");
+		clock_t end = clock();
+		double timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
+		//printf("(in %f ms)\n\n",timespent);
+		HAL_Delay(130);
+		
 		
 		/*printf("Drawing image...");
 		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		/*jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
+		begin = clock();
+		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
 		int filelen = ftell(jpeg);             // Get the current byte offset in the file		
 		rewind(jpeg);                      // Jump back to the beginning of the file
 
-		printf("Filelen: %d\n",filelen);
+		//printf("Filelen: %d\n",filelen);
 		
 		buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
-		*/
-		char lol = 'U';
+		end = clock();
+		timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
+		//printf("File read (in %f ms)\n\n",timespent);
+		//char lol = 'U';
 		//fwrite((const void*) &lol,1,1,uart);
-		
+		/*
 		int count = write(uart0_filestream, &lol, 1);		//Filestream, bytes to write, number of bytes to write
 		if (count < 0)
 		{
 			printf("UART TX error\n");
 		}
-		
-		//fwrite((const void*) &beacon,8,1,uart);
-		HAL_Delay(500);
-		/*fwrite((const void*) &filelen,sizeof(int),1,uart);
-		fwrite(buffer,sizeof(buffer),1,uart);
-
-		free(buffer);*/
+		*/
+		begin = clock();
+		write(uart0_filestream, (const void*) &beacon,8);
+		//HAL_Delay(500);
+		write(uart0_filestream, (const void*) &filelen,sizeof(int));
+		write(uart0_filestream, buffer,filelen);
+		end = clock();
+		timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
+		//printf("Sent. (in %f ms)\n\n",timespent);
+		free(buffer);
 		
 	}
 	free(rgb565_buffer);
-	fclose(uart);
+	//fclose(uart);
 }
