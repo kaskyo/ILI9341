@@ -124,10 +124,13 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	
 	width = cinfo.output_width;
 	printf("width = cinfo.output_width;\n");
+	printf("width = %d\n",width);
 	height = cinfo.output_height;
 	printf("height = cinfo.output_height;\n");
+	printf("height = %d\n", height);
 	pixel_size = cinfo.output_components;
 	printf("pixel_size = cinfo.output_components;\n");
+	printf("pixel_size = %d\n", pixel_size);
 
 	//syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
 	//		width, height, pixel_size);
@@ -164,7 +167,8 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 
 		jpeg_read_scanlines(&cinfo, buffer_array, 1);
 
-	}
+	}	
+	printf("Done reading scanlines\n");
 	//syslog(LOG_INFO, "Proc: Done reading scanlines");
 
 
@@ -176,6 +180,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// If you didn't read all the scanlines, but want to stop early,
 	// you instead need to call jpeg_abort_decompress(&cinfo)
 	jpeg_finish_decompress(&cinfo);
+	printf("jpeg_finish_decompress(&cinfo);\n");
 
 	// At this point, optionally go back and either load a new jpg into
 	// the jpg_buffer, or define a new jpeg_mem_src, and then start 
@@ -183,6 +188,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	
 	// Once you're really really done, destroy the object to free everything
 	jpeg_destroy_decompress(&cinfo);
+	printf("jpeg_finish_decompress(&cinfo);\n");
 	// And free the input buffer
 	//free(jpg_buffer);
 	
@@ -204,8 +210,9 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 		rgb565_buffer[i*2] = bt1;
 		rgb565_buffer[i*2+1] = bt2;
 	}
-
+	printf("Done BMP565\n");
 	free(bmp_buffer);
+	printf("free(bmp_buffer);\n");
 }
 
 int uart0_filestream = -1;
