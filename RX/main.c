@@ -19,7 +19,7 @@
 
 unsigned char *rgb565_buffer;
 
-void readJPG(char* fn) {
+void readJPG(unsigned long jpg_size, unsigned char *jpg_buffer) {
 	
 	int rc, i, j;
 
@@ -34,8 +34,6 @@ void readJPG(char* fn) {
 
 	// Variables for the source jpg
 	struct stat file_info;
-	unsigned long jpg_size;
-	unsigned char *jpg_buffer;
 
 	// Variables for the decompressor itself
 	struct jpeg_decompress_struct cinfo;
@@ -52,7 +50,7 @@ void readJPG(char* fn) {
 	// Normally, if it's a file, you'd use jpeg_stdio_src, but just
 	// imagine that this was instead being downloaded from the Internet
 	// or otherwise not coming from disk
-	rc = stat(fn, &file_info);
+	/*rc = stat(fn, &file_info);
 	if (rc) {
 		//syslog(LOG_ERR, "FAILED to stat source jpg");
 		exit(EXIT_FAILURE);
@@ -67,7 +65,7 @@ void readJPG(char* fn) {
 		//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 		i += rc;
 	}
-	close(fd);
+	close(fd);*/
 
 //   SSS    TTTTTTT     A     RRRR     TTTTTTT
 // SS   SS     T       A A    R   RR      T   
@@ -214,7 +212,7 @@ void InitUART()
 	//											immediately with a failure status if the output can't be written immediately.
 	//
 	//	O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
-	uart0_filestream = open("/dev/serial0", O_WRONLY | O_NOCTTY | O_NDELAY);		//Open in non blocking read/write mode
+	uart0_filestream = open("/dev/serial0", O_WRONLY | O_NOCTTY);		//Open in non blocking read/write mode
 	if (uart0_filestream == -1)
 	{
 		//ERROR - CAN'T OPEN SERIAL PORT
@@ -233,7 +231,7 @@ void InitUART()
 	//	PARODD - Odd parity (else even)
 	struct termios options;
 	tcgetattr(uart0_filestream, &options);
-	options.c_cflag = B2000000 | CS8 | CLOCAL;		//<Set baud rate
+	options.c_cflag = B2000000 | CS8 | CLOCAL | CREAD;		//<Set baud rate
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
@@ -241,7 +239,9 @@ void InitUART()
 	tcsetattr(uart0_filestream, TCSANOW, &options);	
 }
 
-
+/*
+int rx_length = read(uart0_filestream, (void*)rx_buffer, rx_length);
+*/
 int main()
 {/*
 	printf("Initing...");
