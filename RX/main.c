@@ -20,7 +20,7 @@
 
 unsigned char *rgb565_buffer;
 
-void readJPG(unsigned long jpg_size, unsigned char *jpg_buffer) {
+void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	
 	int rc, i, j;
 
@@ -173,7 +173,7 @@ void readJPG(unsigned long jpg_size, unsigned char *jpg_buffer) {
 	// Once you're really really done, destroy the object to free everything
 	jpeg_destroy_decompress(&cinfo);
 	// And free the input buffer
-	free(jpg_buffer);
+	//free(jpg_buffer);
 	
 	unsigned char r,g,b,r5,g6,b5,bt1,bt2;
 
@@ -213,7 +213,7 @@ void InitUART()
 	//											immediately with a failure status if the output can't be written immediately.
 	//
 	//	O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
-	uart0_filestream = open("/dev/serial0", O_WRONLY | O_NOCTTY);		//Open in non blocking read/write mode
+	uart0_filestream = open("/dev/serial0", O_RDONLY | O_NOCTTY);		//Open in non blocking read/write mode
 	if (uart0_filestream == -1)
 	{
 		//ERROR - CAN'T OPEN SERIAL PORT
@@ -232,7 +232,7 @@ void InitUART()
 	//	PARODD - Odd parity (else even)
 	struct termios options;
 	tcgetattr(uart0_filestream, &options);
-	options.c_cflag = B2000000 | CS8 | CLOCAL | CREAD;		//<Set baud rate
+	options.c_cflag = B500000 | CS8 | CLOCAL | CREAD;		//<Set baud rate
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
@@ -245,7 +245,7 @@ int rx_length = read(uart0_filestream, (void*)rx_buffer, rx_length);
 */
 int main()
 {
-	printf("Initing...");
+	/*printf("Initing...");
 	ILI9341_Init();
 	printf("Done\n");
 	//HAL_Delay(500);
@@ -260,32 +260,41 @@ int main()
 	//HAL_Delay(500);
 	//system("stty -F /dev/serial0 2000000");
 	HAL_Delay(1000);
-	//FILE* uart = fopen("/dev/serial0","wb");
+	*///FILE* uart = fopen("/dev/serial0","wb");
 	InitUART();
 	FILE* jpeg;
 	char* buffer;
-	char beacon[8] = "Petouch";
-	char receivedBeacon[8] = {0};
+	unsigned char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
+	unsigned char receivedBeacon[8] = {0};
 	
-	int jpegSize;
+	uint16_t jpegSize;
 	unsigned char* jpegBuffer;
-	char rx;
-	int rxl;
+	jpegBuffer = (unsigned char*)malloc(8500);
+	unsigned char rx;
+	uint16_t rxl;
 	for (;;) 
 	{
 		
 		rxl = read(uart0_filestream, (void*)&rx, 1);
+		
 		for (int i=0; i<7; i++)
+		{
 			receivedBeacon[i] = receivedBeacon[i+1];
+			printf("%hhX",receivedBeacon[i]);
+		}
 		receivedBeacon[7] = rx;
+		printf("%hhX\n",rx);
 		
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
-			rxl	= read(uart0_filestream, (void*)&jpegSize, sizeof(int));
-			jpegBuffer = (unsigned char*)malloc(jpegSize);
-			rxl = read(uart0_filestream, (void*)&jpegBuffer, jpegSize);
+			printf("I GOT A BEACON\n");
+			rxl	= read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
+			printf("Size: %d\n", jpegSize);
+			rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
+			printf("Read %d bytes\n",rxl);
 			readJPG(jpegSize, jpegBuffer);
-			ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+			printf("JPEG is read\n");
+	//		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 		}
 		/*printf("Reading JPG...");
 		readJPG("/home/pi/ILI9341/1.jpg");
