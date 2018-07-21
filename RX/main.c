@@ -291,14 +291,14 @@ int main()
 		readJPG("/home/pi/ILI9341/1.jpg");
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		clock_t begin = clock();
+		/*clock_t begin = clock();
 		//printf("Capturing...");
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
 		//printf("Done\n");
 		clock_t end = clock();
 		double timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("(in %f ms)\n\n",timespent);
-		HAL_Delay(130);
+		HAL_Delay(130);*/
 		
 		
 		/*printf("Drawing image...");
