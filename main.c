@@ -214,6 +214,8 @@ int main()
 	
 	FILE* uart = fopen("/dev/serial0","wb");
 	FILE* jpeg;
+	char* buffer;
+	char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
 	for (;;) {
 
 		/*printf("Reading JPG...");
@@ -231,8 +233,20 @@ int main()
 		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		jpeg = fopen("/home/pi/ILI9341/1.jpg","r");
-		fwrite(uart
+		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
+		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
+		int filelen = ftell(jpeg);             // Get the current byte offset in the file		
+		rewind(jpeg);                      // Jump back to the beginning of the file
+
+		printf("Filelen: %d\n",filelen);
+		
+		buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
+		fread(buffer, filelen, 1, fileptr); // Read in the entire file
+		fclose(fileptr); // Close the file
+		
+		fwrite((const void*) &beacon,8,1,uart);
+		fwrite((const void*) &filelen,sizeof(int),1,uart);
+		fwrite(buffer,sizeof(buffer),1,uart);
 		
 	}
 	free(rgb565_buffer);
