@@ -8,7 +8,7 @@ void MX_SPI5_Init() {
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, 0);
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, 0);
 
-	bcm2835_spi_setClockDivider(4);
+	bcm2835_spi_setClockDivider(6);
 
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);

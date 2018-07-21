@@ -10,12 +10,12 @@ if [ -e $pid_file ]; then
 	exit 1
 fi
 
-output_file=${1-~/tmp_%d.jpg}
-
+#output_file=${1-~/tmp_%d.jpg}
+output_file=/home/pi/ILI9341/1.jpg
 echo "Output will be written to $output_file"
 
 #This will make pictures of 200x200px feel free to change.
-./raspifastcamd -w 200 -h 200 -o $output_file &
+./raspifastcamd -w 320 -h 240 -o $output_file &
 pid=$!
 
 echo "Pid of raspifastcamd is $pid"

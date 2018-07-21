@@ -20,9 +20,9 @@ void readJPG(char* fn) {
 	
 	int rc, i, j;
 
-	char *syslog_prefix = (char*) malloc(1024);
-	sprintf(syslog_prefix, "%s", fn);
-	openlog(syslog_prefix, LOG_PERROR | LOG_PID, LOG_USER);
+	//char *syslog_prefix = (char*) malloc(1024);
+	//sprintf(syslog_prefix, "%s", fn);
+	//openlog(syslog_prefix, LOG_PERROR | LOG_PID, LOG_USER);
 
 	/*if (argc != 2) {
 		fprintf(stderr, "USAGE: %s filename.jpg\n", fn);
@@ -51,7 +51,7 @@ void readJPG(char* fn) {
 	// or otherwise not coming from disk
 	rc = stat(fn, &file_info);
 	if (rc) {
-		syslog(LOG_ERR, "FAILED to stat source jpg");
+		//syslog(LOG_ERR, "FAILED to stat source jpg");
 		exit(EXIT_FAILURE);
 	}
 	jpg_size = file_info.st_size;
@@ -61,7 +61,7 @@ void readJPG(char* fn) {
 	i = 0;
 	while (i < jpg_size) {
 		rc = read(fd, jpg_buffer + i, jpg_size - i);
-		syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
+		//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 		i += rc;
 	}
 	close(fd);
@@ -76,7 +76,7 @@ void readJPG(char* fn) {
 // SS   SS     T     A     A  R    R      T   
 //   SSS       T     A     A  R     R     T   
 
-	syslog(LOG_INFO, "Proc: Create Decompress struct");
+	//syslog(LOG_INFO, "Proc: Create Decompress struct");
 	// Allocate a new decompress struct, with the default error handler.
 	// The default error handler will exit() on pretty much any issue,
 	// so it's likely you'll want to replace it or supplement it with
@@ -85,7 +85,7 @@ void readJPG(char* fn) {
 	jpeg_create_decompress(&cinfo);
 
 
-	syslog(LOG_INFO, "Proc: Set memory buffer as source");
+	//syslog(LOG_INFO, "Proc: Set memory buffer as source");
 	// Configure this decompressor to read its data from a memory 
 	// buffer starting at unsigned char *jpg_buffer, which is jpg_size
 	// long, and which must contain a complete jpg already.
@@ -98,18 +98,18 @@ void readJPG(char* fn) {
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
 
 
-	syslog(LOG_INFO, "Proc: Read the JPEG header");
+	//syslog(LOG_INFO, "Proc: Read the JPEG header");
 	// Have the decompressor scan the jpeg header. This won't populate
 	// the cinfo struct output fields, but will indicate if the
 	// jpeg is valid.
 	rc = jpeg_read_header(&cinfo, TRUE);
 
 	if (rc != 1) {
-		syslog(LOG_ERR, "File does not seem to be a normal JPEG");
+		//syslog(LOG_ERR, "File does not seem to be a normal JPEG");
 		exit(EXIT_FAILURE);
 	}
 
-	syslog(LOG_INFO, "Proc: Initiate JPEG decompression");
+	//syslog(LOG_INFO, "Proc: Initiate JPEG decompression");
 	// By calling jpeg_start_decompress, you populate cinfo
 	// and can then allocate your output bitmap buffers for
 	// each scanline.
@@ -119,8 +119,8 @@ void readJPG(char* fn) {
 	height = cinfo.output_height;
 	pixel_size = cinfo.output_components;
 
-	syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
-			width, height, pixel_size);
+	//syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
+	//		width, height, pixel_size);
 
 	bmp_size = width * height * pixel_size;
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
@@ -130,7 +130,7 @@ void readJPG(char* fn) {
 	row_stride = width * pixel_size;
 
 
-	syslog(LOG_INFO, "Proc: Start reading scanlines");
+	//syslog(LOG_INFO, "Proc: Start reading scanlines");
 	//
 	// Now that you have the decompressor entirely configured, it's time
 	// to read out all of the scanlines of the jpeg.
@@ -152,7 +152,7 @@ void readJPG(char* fn) {
 		jpeg_read_scanlines(&cinfo, buffer_array, 1);
 
 	}
-	syslog(LOG_INFO, "Proc: Done reading scanlines");
+	//syslog(LOG_INFO, "Proc: Done reading scanlines");
 
 
 	// Once done reading *all* scanlines, release all internal buffers,
@@ -197,25 +197,44 @@ void readJPG(char* fn) {
 
 int main()
 {
-	printf("Initing...\n");
+	printf("Initing...");
 	ILI9341_Init();
-	printf("Done, waiting\n");
-	//HAL_Delay(1000);
-	printf("Filling...\n");
-	//HAL_Delay(1000);
-	ILI9341_Fill_Screen(WHITE);
-	//HAL_Delay(1000);
-	ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
-	
-	ILI9341_Draw_Text("XYU",10,10,BLACK,1,RED);
 	printf("Done\n");
-	HAL_Delay(1000);
-	rgb565_buffer = (unsigned char*)malloc(320*240*2);
-	for (;;) {
-		system("raspistill -o 1.jpg -w 320 -h 240 -q 30 -t 1 -n");
-		readJPG("./1.jpg");
+	//HAL_Delay(500);
 
+	printf("Filling...");
+	ILI9341_Fill_Screen(WHITE);
+	printf("Done\n");
+	//HAL_Delay(500);
+	
+	rgb565_buffer = (unsigned char*)malloc(320*240*2);
+	printf("Buffer allocated\n");
+	//HAL_Delay(500);
+	system("stty -F /dev/serial0 2000000");
+	
+	FILE* uart = fopen("/dev/serial0","wb");
+	FILE* jpeg;
+	for (;;) {
+
+		/*printf("Reading JPG...");
+		readJPG("/home/pi/ILI9341/1.jpg");
+		printf("Done\n");*/
+		//HAL_Delay(500);
+		
+		printf("Capturing...");
+		system("/home/pi/ILI9341/cam/do_caputure.sh");
+		printf("Done\n");
+		HAL_Delay(100);
+		
+		
+		/*printf("Drawing image...");
 		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+		printf("Done\n");*/
+		//HAL_Delay(500);
+		jpeg = fopen("/home/pi/ILI9341/1.jpg","r");
+		fwrite(uart
+		
 	}
 	free(rgb565_buffer);
+	fclose(uart);
 }
