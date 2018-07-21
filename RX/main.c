@@ -272,9 +272,9 @@ int main()
 	ILI9341_Fill_Screen(WHITE);
 	printf("Done\n");
 	//HAL_Delay(500);
-	
+	*/
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
-	printf("Buffer allocated\n");
+	/*printf("Buffer allocated\n");
 	//HAL_Delay(500);
 	//system("stty -F /dev/serial0 2000000");
 	HAL_Delay(1000);
