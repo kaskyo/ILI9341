@@ -16,6 +16,7 @@
 #include <termios.h>		//Used for UART
 
 #include <time.h>
+#include <string.h>
 
 unsigned char *rgb565_buffer;
 
@@ -243,7 +244,7 @@ void InitUART()
 int rx_length = read(uart0_filestream, (void*)rx_buffer, rx_length);
 */
 int main()
-{/*
+{
 	printf("Initing...");
 	ILI9341_Init();
 	printf("Done\n");
@@ -259,13 +260,33 @@ int main()
 	//HAL_Delay(500);
 	//system("stty -F /dev/serial0 2000000");
 	HAL_Delay(1000);
-*/	//FILE* uart = fopen("/dev/serial0","wb");
+	//FILE* uart = fopen("/dev/serial0","wb");
 	InitUART();
 	FILE* jpeg;
 	char* buffer;
-	char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
-	for (;;) {
-
+	char beacon[8] = "Petouch";
+	char receivedBeacon[8] = {0};
+	
+	int jpegSize;
+	unsigned char* jpegBuffer;
+	char rx;
+	int rxl;
+	for (;;) 
+	{
+		
+		rxl = read(uart0_filestream, (void*)&rx, 1);
+		for (int i=0; i<7; i++)
+			receivedBeacon[i] = receivedBeacon[i+1];
+		receivedBeacon[7] = rx;
+		
+		if (memcmp(beacon,receivedBeacon,8)==0)
+		{
+			rxl	= read(uart0_filestream, (void*)&jpegSize, sizeof(int));
+			jpegBuffer = (unsigned char*)malloc(jpegSize);
+			rxl = read(uart0_filestream, (void*)&jpegBuffer, jpegSize);
+			readJPG(jpegSize, jpegBuffer);
+			ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+		}
 		/*printf("Reading JPG...");
 		readJPG("/home/pi/ILI9341/1.jpg");
 		printf("Done\n");*/
@@ -284,7 +305,7 @@ int main()
 		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		begin = clock();
+		/*begin = clock();
 		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
 		int filelen = ftell(jpeg);             // Get the current byte offset in the file		
@@ -296,7 +317,7 @@ int main()
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
 		end = clock();
-		timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
+		timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);*/
 		//printf("File read (in %f ms)\n\n",timespent);
 		//char lol = 'U';
 		//fwrite((const void*) &lol,1,1,uart);
@@ -307,7 +328,7 @@ int main()
 			printf("UART TX error\n");
 		}
 		*/
-		begin = clock();
+		/*begin = clock();
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
 		write(uart0_filestream, (const void*) &filelen,sizeof(int));
@@ -315,7 +336,7 @@ int main()
 		end = clock();
 		timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
-		free(buffer);
+		free(buffer);*/
 		
 	}
 	free(rgb565_buffer);
