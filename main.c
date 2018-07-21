@@ -196,7 +196,7 @@ void readJPG(char* fn) {
 }
 
 int main()
-{
+{/*
 	printf("Initing...");
 	ILI9341_Init();
 	printf("Done\n");
@@ -210,11 +210,11 @@ int main()
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
 	printf("Buffer allocated\n");
 	//HAL_Delay(500);
-	system("stty -F /dev/serial0 2000000");
-	
-	FILE* uart = fopen("/dev/serial0","wb");
-	FILE* jpeg;
-	char* buffer;
+	//system("stty -F /dev/serial0 2000000");
+	HAL_Delay(1000);
+*/	FILE* uart = fopen("/dev/serial0","wb");
+	//FILE* jpeg;
+	//char* buffer;
 	char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
 	for (;;) {
 
@@ -222,18 +222,18 @@ int main()
 		readJPG("/home/pi/ILI9341/1.jpg");
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		
+		/*
 		printf("Capturing...");
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
 		printf("Done\n");
-		HAL_Delay(100);
-		
+		HAL_Delay(300);
+		*/
 		
 		/*printf("Drawing image...");
 		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 		printf("Done\n");*/
 		//HAL_Delay(500);
-		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
+		/*jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
 		int filelen = ftell(jpeg);             // Get the current byte offset in the file		
 		rewind(jpeg);                      // Jump back to the beginning of the file
@@ -241,12 +241,17 @@ int main()
 		printf("Filelen: %d\n",filelen);
 		
 		buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
-		fread(buffer, filelen, 1, fileptr); // Read in the entire file
-		fclose(fileptr); // Close the file
-		
-		fwrite((const void*) &beacon,8,1,uart);
-		fwrite((const void*) &filelen,sizeof(int),1,uart);
+		fread(buffer, filelen, 1, jpeg); // Read in the entire file
+		fclose(jpeg); // Close the file
+		*/
+		char lol = 'U';
+		fwrite((const void*) &lol,1,1,uart);
+		//fwrite((const void*) &beacon,8,1,uart);
+		HAL_Delay(500);
+		/*fwrite((const void*) &filelen,sizeof(int),1,uart);
 		fwrite(buffer,sizeof(buffer),1,uart);
+
+		free(buffer);*/
 		
 	}
 	free(rgb565_buffer);
