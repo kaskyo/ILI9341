@@ -127,7 +127,7 @@ unsigned char *jpg_buffer;
 		/* If we get here, the JPEG code has signaled an error. */
 		printf("%s\n", jpegLastErrorMsg);
 		jpeg_destroy_decompress(&cinfo);
-		fclose(fileHandler);
+		
 		return 1;
 	}
 	
