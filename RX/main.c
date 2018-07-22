@@ -84,9 +84,9 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// so it's likely you'll want to replace it or supplement it with
 	// your own.
 	cinfo.err = jpeg_std_error(&jerr);	
-	printf("cinfo.err = jpeg_std_error(&jerr);	\n");
+	//printf("cinfo.err = jpeg_std_error(&jerr);	\n");
 	jpeg_create_decompress(&cinfo);
-	printf("jpeg_create_decompress(&cinfo);\n");
+	//printf("jpeg_create_decompress(&cinfo);\n");
 
 
 	//syslog(LOG_INFO, "Proc: Set memory buffer as source");
@@ -100,7 +100,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// implementation of the standard jpeg_mem_src and jpeg_stdio_src 
 	// managers as examples to work from.
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
-	printf("jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);\n");
+	//printf("jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);\n");
 
 
 	//syslog(LOG_INFO, "Proc: Read the JPEG header");
@@ -108,7 +108,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// the cinfo struct output fields, but will indicate if the
 	// jpeg is valid.
 	rc = jpeg_read_header(&cinfo, TRUE);
-	printf("rc = jpeg_read_header(&cinfo, TRUE);\n");
+	//printf("rc = jpeg_read_header(&cinfo, TRUE);\n");
 
 	if (rc != 1) {
 		//syslog(LOG_ERR, "File does not seem to be a normal JPEG");
@@ -120,30 +120,30 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// and can then allocate your output bitmap buffers for
 	// each scanline.
 	jpeg_start_decompress(&cinfo);
-	printf("jpeg_start_decompress(&cinfo);\n");
+	//printf("jpeg_start_decompress(&cinfo);\n");
 	
 	width = cinfo.output_width;
-	printf("width = cinfo.output_width;\n");
-	printf("width = %d\n",width);
+	//printf("width = cinfo.output_width;\n");
+	//printf("width = %d\n",width);
 	height = cinfo.output_height;
-	printf("height = cinfo.output_height;\n");
-	printf("height = %d\n", height);
+	//printf("height = cinfo.output_height;\n");
+	//printf("height = %d\n", height);
 	pixel_size = cinfo.output_components;
-	printf("pixel_size = cinfo.output_components;\n");
-	printf("pixel_size = %d\n", pixel_size);
+	//printf("pixel_size = cinfo.output_components;\n");
+	//printf("pixel_size = %d\n", pixel_size);
 
 	//syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
 	//		width, height, pixel_size);
 
 	bmp_size = width * height * pixel_size;
-	printf("bmp_size = width * height * pixel_size;\n");
+	//printf("bmp_size = width * height * pixel_size;\n");
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
-	printf("bmp_buffer = (unsigned char*) malloc(bmp_size);\n");
+	//printf("bmp_buffer = (unsigned char*) malloc(bmp_size);\n");
 
 	// The row_stride is the total number of bytes it takes to store an
 	// entire scanline (row). 
 	row_stride = width * pixel_size;
-	printf("row_stride = width * pixel_size;\n");
+	//printf("row_stride = width * pixel_size;\n");
 
 
 	//syslog(LOG_INFO, "Proc: Start reading scanlines");
@@ -168,7 +168,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 		jpeg_read_scanlines(&cinfo, buffer_array, 1);
 
 	}	
-	printf("Done reading scanlines\n");
+	//printf("Done reading scanlines\n");
 	//syslog(LOG_INFO, "Proc: Done reading scanlines");
 
 
@@ -180,7 +180,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// If you didn't read all the scanlines, but want to stop early,
 	// you instead need to call jpeg_abort_decompress(&cinfo)
 	jpeg_finish_decompress(&cinfo);
-	printf("jpeg_finish_decompress(&cinfo);\n");
+	//printf("jpeg_finish_decompress(&cinfo);\n");
 
 	// At this point, optionally go back and either load a new jpg into
 	// the jpg_buffer, or define a new jpeg_mem_src, and then start 
@@ -188,7 +188,7 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	
 	// Once you're really really done, destroy the object to free everything
 	jpeg_destroy_decompress(&cinfo);
-	printf("jpeg_finish_decompress(&cinfo);\n");
+	//printf("jpeg_finish_decompress(&cinfo);\n");
 	// And free the input buffer
 	//free(jpg_buffer);
 	
@@ -210,9 +210,9 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 		rgb565_buffer[i*2] = bt1;
 		rgb565_buffer[i*2+1] = bt2;
 	}
-	printf("Done BMP565\n");
+	//printf("Done BMP565\n");
 	free(bmp_buffer);
-	printf("free(bmp_buffer);\n");
+	//printf("free(bmp_buffer);\n");
 }
 
 int uart0_filestream = -1;
@@ -263,7 +263,7 @@ int rx_length = read(uart0_filestream, (void*)rx_buffer, rx_length);
 */
 int main()
 {
-	/*printf("Initing...");
+	printf("Initing...");
 	ILI9341_Init();
 	printf("Done\n");
 	//HAL_Delay(500);
@@ -272,7 +272,7 @@ int main()
 	ILI9341_Fill_Screen(WHITE);
 	printf("Done\n");
 	//HAL_Delay(500);
-	*/
+	
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
 	/*printf("Buffer allocated\n");
 	//HAL_Delay(500);
@@ -287,7 +287,7 @@ int main()
 	
 	uint16_t jpegSize;
 	unsigned char* jpegBuffer;
-	jpegBuffer = (unsigned char*)malloc(8500);
+	jpegBuffer = (unsigned char*)malloc(0x7FFF);
 	unsigned char rx;
 	uint16_t rxl;
 	for (;;) 
@@ -298,21 +298,29 @@ int main()
 		for (int i=0; i<7; i++)
 		{
 			receivedBeacon[i] = receivedBeacon[i+1];
-			printf("%hhX",receivedBeacon[i]);
+			//printf("%hhX",receivedBeacon[i]);
 		}
 		receivedBeacon[7] = rx;
-		printf("%hhX\n",rx);
+		//printf("%hhX\n",rx);
 		
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
 			printf("I GOT A BEACON\n");
 			rxl	= read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
 			printf("Size: %d\n", jpegSize);
-			rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
-			printf("Read %d bytes\n",rxl);
-			readJPG(jpegSize, jpegBuffer);
-			printf("JPEG is read\n");
-	//		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+			uint16_t i = 0;
+			while (i < jpegSize) {
+				rxl = read(uart0_filestream, jpegBuffer + i, jpegSize - i);
+				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
+				i += rxl;
+			}
+			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
+			printf("Read %d bytes\n",i);
+			if (jpegSize>0) {
+				readJPG(jpegSize, jpegBuffer);
+				//printf("JPEG is read\n");
+				ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+			}
 		}
 		/*printf("Reading JPG...");
 		readJPG("/home/pi/ILI9341/1.jpg");

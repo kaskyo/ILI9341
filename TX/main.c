@@ -277,7 +277,7 @@ int main()
 		//clock_t end = clock();
 		//double timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("(in %f ms)\n\n",timespent);
-		HAL_Delay(130);
+		HAL_Delay(168);
 		
 		
 		/*printf("Drawing image...");
