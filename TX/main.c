@@ -264,7 +264,7 @@ int main()
 		//clock_t end = clock();
 		//double timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("(in %f ms)\n\n",timespent);
-		HAL_Delay(168);
+		HAL_Delay(250);
 		
 		
 		//begin = clock();
@@ -294,7 +294,15 @@ int main()
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
 		write(uart0_filestream, (const void*) &filelen,sizeof(uint16_t));
-		write(uart0_filestream, buffer,filelen);
+		FILE* out = fopen ("tx.jpg","wb");
+		uint16_t i=0, wrl;
+		while (i<filelen)
+		{
+			wrl = write(uart0_filestream, buffer + i,filelen - i);
+			fwrite(buffer + i, sizeof(char),wrl,out);
+			i += wrl;
+		}
+		fclose(out);
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
