@@ -23,7 +23,8 @@ unsigned char *rgb565_buffer;
 void readJPG(char* fileName) {
 	
 	int rc, i, j;
-
+unsigned long jpg_size;
+unsigned char *jpg_buffer;
 	//char *syslog_prefix = (char*) malloc(1024);
 	//sprintf(syslog_prefix, "%s", argv[0]);
 	//openlog(syslog_prefix, LOG_PERROR | LOG_PID, LOG_USER);
@@ -45,9 +46,7 @@ void readJPG(char* fileName) {
 
 	// Variables for the source jpg
 	struct stat file_info;
-	unsigned long jpg_size;
-	unsigned char *jpg_buffer;
-
+	
 	// Variables for the decompressor itself
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
@@ -90,7 +89,7 @@ void readJPG(char* fileName) {
 // SS   SS     T     A     A  R    R      T   
 //   SSS       T     A     A  R     R     T   
 
-	syslog(LOG_INFO, "Proc: Create Decompress struct");
+	//syslog(LOG_INFO, "Proc: Create Decompress struct");
 	// Allocate a new decompress struct, with the default error handler.
 	// The default error handler will exit() on pretty much any issue,
 	// so it's likely you'll want to replace it or supplement it with
@@ -99,7 +98,7 @@ void readJPG(char* fileName) {
 	jpeg_create_decompress(&cinfo);
 
 
-	syslog(LOG_INFO, "Proc: Set memory buffer as source");
+	//syslog(LOG_INFO, "Proc: Set memory buffer as source");
 	// Configure this decompressor to read its data from a memory 
 	// buffer starting at unsigned char *jpg_buffer, which is jpg_size
 	// long, and which must contain a complete jpg already.
@@ -112,18 +111,18 @@ void readJPG(char* fileName) {
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
 
 
-	syslog(LOG_INFO, "Proc: Read the JPEG header");
+	//syslog(LOG_INFO, "Proc: Read the JPEG header");
 	// Have the decompressor scan the jpeg header. This won't populate
 	// the cinfo struct output fields, but will indicate if the
 	// jpeg is valid.
 	rc = jpeg_read_header(&cinfo, TRUE);
 
 	if (rc != 1) {
-		syslog(LOG_ERR, "File does not seem to be a normal JPEG");
+		//syslog(LOG_ERR, "File does not seem to be a normal JPEG");
 		exit(EXIT_FAILURE);
 	}
 
-	syslog(LOG_INFO, "Proc: Initiate JPEG decompression");
+	//syslog(LOG_INFO, "Proc: Initiate JPEG decompression");
 	// By calling jpeg_start_decompress, you populate cinfo
 	// and can then allocate your output bitmap buffers for
 	// each scanline.
@@ -133,8 +132,8 @@ void readJPG(char* fileName) {
 	height = cinfo.output_height;
 	pixel_size = cinfo.output_components;
 
-	syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
-			width, height, pixel_size);
+	//syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
+	//		width, height, pixel_size);
 
 	bmp_size = width * height * pixel_size;
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
@@ -144,7 +143,7 @@ void readJPG(char* fileName) {
 	row_stride = width * pixel_size;
 
 
-	syslog(LOG_INFO, "Proc: Start reading scanlines");
+	//syslog(LOG_INFO, "Proc: Start reading scanlines");
 	//
 	// Now that you have the decompressor entirely configured, it's time
 	// to read out all of the scanlines of the jpeg.
@@ -166,7 +165,7 @@ void readJPG(char* fileName) {
 		jpeg_read_scanlines(&cinfo, buffer_array, 1);
 
 	}
-	syslog(LOG_INFO, "Proc: Done reading scanlines");
+	//syslog(LOG_INFO, "Proc: Done reading scanlines");
 
 
 	// Once done reading *all* scanlines, release all internal buffers,
@@ -201,7 +200,7 @@ void readJPG(char* fileName) {
 	// it worked. 
 	
 
-	syslog(LOG_INFO, "End of decompression");
+	//syslog(LOG_INFO, "End of decompression");
 	
 	unsigned char r,g,b,r5,g6,b5,bt1,bt2;
 
@@ -246,7 +245,7 @@ void InitUART()
 	if (uart0_filestream == -1)
 	{
 		//ERROR - CAN'T OPEN SERIAL PORT
-		printf("Error - Unable to open UART.  Ensure it is not in use by another application\n");
+		//printf("Error - Unable to open UART.  Ensure it is not in use by another application\n");
 	}
 	
 	//CONFIGURE THE UART
@@ -298,7 +297,7 @@ int main()
 	
 	uint16_t jpegSize;
 	unsigned char* jpegBuffer;
-	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*10000);
+	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
 	unsigned char rx;
 	uint16_t rxl;
 	for (;;) 
@@ -316,9 +315,9 @@ int main()
 		
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
-			printf("I GOT A BEACON\n");
-			rxl	= read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
-			printf("Size: %d\n", jpegSize);
+			//printf("I GOT A BEACON\n");
+			read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
+			//printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
 			FILE* fp=fopen("rx.jpg", "wb");
 			while (i < jpegSize) {
@@ -329,7 +328,7 @@ int main()
 			}
 			fclose(fp);
 			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
-			printf("Read %d bytes\n",i);
+			//printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
 				readJPG("rx.jpg");
 				//printf("JPEG is read\n");

@@ -1,6 +1,9 @@
 #!/bin/bash
 #Helper script to start RaspiFastCamD
 
+sudo pkill tx
+sudo pkill tx
+
 pid_file=/tmp/raspifastcamd.pid
 
 if [ ! -e $pid_file ]; then

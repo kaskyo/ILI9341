@@ -214,7 +214,7 @@ void InitUART()
 	//											immediately with a failure status if the output can't be written immediately.
 	//
 	//	O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
-	uart0_filestream = open("/dev/serial0", O_WRONLY | O_NOCTTY | O_NDELAY);		//Open in non blocking read/write mode
+	uart0_filestream = open("/dev/serial0", O_WRONLY | O_NOCTTY);		//Open in non blocking read/write mode
 	if (uart0_filestream == -1)
 	{
 		//ERROR - CAN'T OPEN SERIAL PORT
@@ -249,8 +249,9 @@ int main()
 */	//FILE* uart = fopen("/dev/serial0","wb");
 	InitUART();
 	FILE* jpeg;
-	char* buffer;
+	unsigned char* buffer;
 	unsigned char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
+	
 	for (;;) {
 
 		/*printf("Reading JPG...");
@@ -264,7 +265,7 @@ int main()
 		//clock_t end = clock();
 		//double timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("(in %f ms)\n\n",timespent);
-		HAL_Delay(250);
+		HAL_Delay(168);
 		
 		
 		//begin = clock();
@@ -274,8 +275,8 @@ int main()
 		rewind(jpeg);                      // Jump back to the beginning of the file
 
 		//printf("Filelen: %d\n",filelen);
-		
-		buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
+		buffer = (unsigned char *)malloc(filelen+100); // Enough memory for file + \0
+
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
 		//end = clock();
@@ -294,15 +295,15 @@ int main()
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
 		write(uart0_filestream, (const void*) &filelen,sizeof(uint16_t));
-		FILE* out = fopen ("tx.jpg","wb");
+		//FILE* out = fopen ("tx.jpg","wb");
 		uint16_t i=0, wrl;
 		while (i<filelen)
 		{
 			wrl = write(uart0_filestream, buffer + i,filelen - i);
-			fwrite(buffer + i, sizeof(char),wrl,out);
+		//	fwrite(buffer + i, sizeof(char),wrl,out);
 			i += wrl;
 		}
-		fclose(out);
+		//fclose(out);
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
