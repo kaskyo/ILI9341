@@ -20,53 +20,65 @@
 
 unsigned char *rgb565_buffer;
 
-void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
+void readJPG(char* fileName) {
 	
 	int rc, i, j;
 
 	//char *syslog_prefix = (char*) malloc(1024);
-	//sprintf(syslog_prefix, "%s", fn);
+	//sprintf(syslog_prefix, "%s", argv[0]);
 	//openlog(syslog_prefix, LOG_PERROR | LOG_PID, LOG_USER);
 
-	/*if (argc != 2) {
-		fprintf(stderr, "USAGE: %s filename.jpg\n", fn);
-		exit(EXIT_FAILURE);
-	}*/
+	//if (argc != 2) {
+	//	fprintf(stderr, "USAGE: %s filename.jpg\n", argv[0]);
+	//	exit(EXIT_FAILURE);
+	//}
+
+//   SSS    EEEEEEE  TTTTTTT  U     U  PPPP   
+// SS   SS  E           T     U     U  P   PP 
+// S        E           T     U     U  P    PP
+// SS       E           T     U     U  P   PP 
+//   SSS    EEEE        T     U     U  PPPP   
+//      SS  E           T     U     U  P      
+//       S  E           T     U     U  P      
+// SS   SS  E           T      U   U   P      
+//   SSS    EEEEEEE     T       UUU    P      
 
 	// Variables for the source jpg
 	struct stat file_info;
+	unsigned long jpg_size;
+	unsigned char *jpg_buffer;
 
 	// Variables for the decompressor itself
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 
 	// Variables for the output buffer, and how long each row is
-
-	int row_stride, width, height, pixel_size;
 	unsigned long bmp_size;
 	unsigned char *bmp_buffer;
+	int row_stride, width, height, pixel_size;
+
 
 	// Load the jpeg data from a file into a memory buffer for 
 	// the purpose of this demonstration.
 	// Normally, if it's a file, you'd use jpeg_stdio_src, but just
 	// imagine that this was instead being downloaded from the Internet
 	// or otherwise not coming from disk
-	/*rc = stat(fn, &file_info);
+	rc = stat(fileName, &file_info);
 	if (rc) {
-		//syslog(LOG_ERR, "FAILED to stat source jpg");
+		syslog(LOG_ERR, "FAILED to stat source jpg");
 		exit(EXIT_FAILURE);
 	}
 	jpg_size = file_info.st_size;
 	jpg_buffer = (unsigned char*) malloc(jpg_size + 100);
 
-	int fd = open(fn, O_RDONLY);
+	int fd = open(fileName, O_RDONLY);
 	i = 0;
 	while (i < jpg_size) {
 		rc = read(fd, jpg_buffer + i, jpg_size - i);
-		//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
+		syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 		i += rc;
 	}
-	close(fd);*/
+	close(fd);
 
 //   SSS    TTTTTTT     A     RRRR     TTTTTTT
 // SS   SS     T       A A    R   RR      T   
@@ -78,18 +90,16 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 // SS   SS     T     A     A  R    R      T   
 //   SSS       T     A     A  R     R     T   
 
-	//syslog(LOG_INFO, "Proc: Create Decompress struct");
+	syslog(LOG_INFO, "Proc: Create Decompress struct");
 	// Allocate a new decompress struct, with the default error handler.
 	// The default error handler will exit() on pretty much any issue,
 	// so it's likely you'll want to replace it or supplement it with
 	// your own.
 	cinfo.err = jpeg_std_error(&jerr);	
-	//printf("cinfo.err = jpeg_std_error(&jerr);	\n");
 	jpeg_create_decompress(&cinfo);
-	//printf("jpeg_create_decompress(&cinfo);\n");
 
 
-	//syslog(LOG_INFO, "Proc: Set memory buffer as source");
+	syslog(LOG_INFO, "Proc: Set memory buffer as source");
 	// Configure this decompressor to read its data from a memory 
 	// buffer starting at unsigned char *jpg_buffer, which is jpg_size
 	// long, and which must contain a complete jpg already.
@@ -100,53 +110,41 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// implementation of the standard jpeg_mem_src and jpeg_stdio_src 
 	// managers as examples to work from.
 	jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);
-	//printf("jpeg_mem_src(&cinfo, jpg_buffer, jpg_size);\n");
 
 
-	//syslog(LOG_INFO, "Proc: Read the JPEG header");
+	syslog(LOG_INFO, "Proc: Read the JPEG header");
 	// Have the decompressor scan the jpeg header. This won't populate
 	// the cinfo struct output fields, but will indicate if the
 	// jpeg is valid.
 	rc = jpeg_read_header(&cinfo, TRUE);
-	//printf("rc = jpeg_read_header(&cinfo, TRUE);\n");
 
 	if (rc != 1) {
-		//syslog(LOG_ERR, "File does not seem to be a normal JPEG");
+		syslog(LOG_ERR, "File does not seem to be a normal JPEG");
 		exit(EXIT_FAILURE);
 	}
 
-	//syslog(LOG_INFO, "Proc: Initiate JPEG decompression");
+	syslog(LOG_INFO, "Proc: Initiate JPEG decompression");
 	// By calling jpeg_start_decompress, you populate cinfo
 	// and can then allocate your output bitmap buffers for
 	// each scanline.
 	jpeg_start_decompress(&cinfo);
-	//printf("jpeg_start_decompress(&cinfo);\n");
 	
 	width = cinfo.output_width;
-	//printf("width = cinfo.output_width;\n");
-	//printf("width = %d\n",width);
 	height = cinfo.output_height;
-	//printf("height = cinfo.output_height;\n");
-	//printf("height = %d\n", height);
 	pixel_size = cinfo.output_components;
-	//printf("pixel_size = cinfo.output_components;\n");
-	//printf("pixel_size = %d\n", pixel_size);
 
-	//syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
-	//		width, height, pixel_size);
+	syslog(LOG_INFO, "Proc: Image is %d by %d with %d components", 
+			width, height, pixel_size);
 
 	bmp_size = width * height * pixel_size;
-	//printf("bmp_size = width * height * pixel_size;\n");
 	bmp_buffer = (unsigned char*) malloc(bmp_size);
-	//printf("bmp_buffer = (unsigned char*) malloc(bmp_size);\n");
 
 	// The row_stride is the total number of bytes it takes to store an
 	// entire scanline (row). 
 	row_stride = width * pixel_size;
-	//printf("row_stride = width * pixel_size;\n");
 
 
-	//syslog(LOG_INFO, "Proc: Start reading scanlines");
+	syslog(LOG_INFO, "Proc: Start reading scanlines");
 	//
 	// Now that you have the decompressor entirely configured, it's time
 	// to read out all of the scanlines of the jpeg.
@@ -167,9 +165,8 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 
 		jpeg_read_scanlines(&cinfo, buffer_array, 1);
 
-	}	
-	//printf("Done reading scanlines\n");
-	//syslog(LOG_INFO, "Proc: Done reading scanlines");
+	}
+	syslog(LOG_INFO, "Proc: Done reading scanlines");
 
 
 	// Once done reading *all* scanlines, release all internal buffers,
@@ -180,7 +177,6 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	// If you didn't read all the scanlines, but want to stop early,
 	// you instead need to call jpeg_abort_decompress(&cinfo)
 	jpeg_finish_decompress(&cinfo);
-	//printf("jpeg_finish_decompress(&cinfo);\n");
 
 	// At this point, optionally go back and either load a new jpg into
 	// the jpg_buffer, or define a new jpeg_mem_src, and then start 
@@ -188,9 +184,24 @@ void readJPG(uint16_t jpg_size, unsigned char *jpg_buffer) {
 	
 	// Once you're really really done, destroy the object to free everything
 	jpeg_destroy_decompress(&cinfo);
-	//printf("jpeg_finish_decompress(&cinfo);\n");
 	// And free the input buffer
-	//free(jpg_buffer);
+	free(jpg_buffer);
+
+// DDDD       OOO    N     N  EEEEEEE
+// D  DDD    O   O   NN    N  E      
+// D    DD  O     O  N N   N  E      
+// D     D  O     O  N N   N  E      
+// D     D  O     O  N  N  N  EEEE   
+// D     D  O     O  N   N N  E      
+// D    DD  O     O  N   N N  E      
+// D  DDD    O   O   N    NN  E      
+// DDDD       OOO    N     N  EEEEEEE
+	
+	// Write the decompressed bitmap out to a ppm file, just to make sure 
+	// it worked. 
+	
+
+	syslog(LOG_INFO, "End of decompression");
 	
 	unsigned char r,g,b,r5,g6,b5,bt1,bt2;
 
@@ -309,15 +320,18 @@ int main()
 			rxl	= read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
 			printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
+			FILE* fp=fopen("rx.jpg", "wb");
 			while (i < jpegSize) {
 				rxl = read(uart0_filestream, jpegBuffer + i, jpegSize - i);
+				fwrite(jpegBuffer + i, sizeof(char), rxl, fp); 
 				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 				i += rxl;
 			}
+			fclose(fp);
 			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
 			printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
-				readJPG(jpegSize, jpegBuffer);
+				readJPG("rx.jpg");
 				//printf("JPEG is read\n");
 				ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 			}
