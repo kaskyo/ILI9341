@@ -359,14 +359,14 @@ int main()
 			read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
 			//printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
-			FILE* fp=fopen("rx.jpg", "wb");
+			//FILE* fp=fopen("rx.jpg", "wb");
 			while (i < jpegSize) {
 				rxl = read(uart0_filestream, jpegBuffer + i, jpegSize - i);
-				fwrite(jpegBuffer + i, sizeof(char), rxl, fp); 
+				//fwrite(jpegBuffer + i, sizeof(char), rxl, fp); 
 				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 				i += rxl;
 			}
-			fclose(fp);
+			//fclose(fp);
 			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
 			//printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
