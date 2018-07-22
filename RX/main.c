@@ -18,9 +18,35 @@
 #include <time.h>
 #include <string.h>
 
+
+struct jpegErrorManager {
+    /* "public" fields */
+    struct jpeg_error_mgr pub;
+    /* for return to caller */
+    jmp_buf setjmp_buffer;
+};
+char jpegLastErrorMsg[JMSG_LENGTH_MAX];
+void jpegErrorExit (j_common_ptr cinfo)
+{
+    /* cinfo->err actually points to a jpegErrorManager struct */
+    jpegErrorManager* myerr = (jpegErrorManager*) cinfo->err;
+    /* note : *(cinfo->err) is now equivalent to myerr->pub */
+
+    /* output_message is a method to print an error message */
+    /*(* (cinfo->err->output_message) ) (cinfo);*/      
+    
+    /* Create the message */
+    ( *(cinfo->err->format_message) ) (cinfo, jpegLastErrorMsg);
+
+    /* Jump to the setjmp point */
+    longjmp(myerr->setjmp_buffer, 1);
+  
+}
+
+
 unsigned char *rgb565_buffer;
 
-void readJPG(char* fileName) {
+int readJPG(char* fileName) {
 	
 	int rc, i, j;
 unsigned long jpg_size;
@@ -49,7 +75,6 @@ unsigned char *jpg_buffer;
 	
 	// Variables for the decompressor itself
 	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr jerr;
 
 	// Variables for the output buffer, and how long each row is
 	unsigned long bmp_size;
@@ -94,7 +119,18 @@ unsigned char *jpg_buffer;
 	// The default error handler will exit() on pretty much any issue,
 	// so it's likely you'll want to replace it or supplement it with
 	// your own.
-	cinfo.err = jpeg_std_error(&jerr);	
+	
+	cinfo.err = jpeg_std_error(&jerr.pub);
+	jerr.pub.error_exit = jpegErrorExit;
+	
+	if (setjmp(jerr.setjmp_buffer)) {
+		/* If we get here, the JPEG code has signaled an error. */
+		printf("%s\n", jpegLastErrorMsg);
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fileHandler);
+		return 1;
+	}
+	
 	jpeg_create_decompress(&cinfo);
 
 
@@ -185,6 +221,8 @@ unsigned char *jpg_buffer;
 	jpeg_destroy_decompress(&cinfo);
 	// And free the input buffer
 	free(jpg_buffer);
+	
+	
 
 // DDDD       OOO    N     N  EEEEEEE
 // D  DDD    O   O   NN    N  E      
@@ -222,6 +260,8 @@ unsigned char *jpg_buffer;
 	}
 	//printf("Done BMP565\n");
 	free(bmp_buffer);
+	
+	return 0;
 	//printf("free(bmp_buffer);\n");
 }
 
@@ -330,9 +370,8 @@ int main()
 			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
 			//printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
-				readJPG("rx.jpg");
-				//printf("JPEG is read\n");
-				ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+				if (readJPG("rx.jpg") == 0)
+					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
 			}
 		}
 		/*printf("Reading JPG...");
