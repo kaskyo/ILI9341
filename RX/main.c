@@ -17,7 +17,7 @@
 
 #include <time.h>
 #include <string.h>
-
+#include <setjmp.h>
 
 struct jpegErrorManager {
     /* "public" fields */
@@ -29,7 +29,7 @@ char jpegLastErrorMsg[JMSG_LENGTH_MAX];
 void jpegErrorExit (j_common_ptr cinfo)
 {
     /* cinfo->err actually points to a jpegErrorManager struct */
-    jpegErrorManager* myerr = (jpegErrorManager*) cinfo->err;
+    struct jpegErrorManager* myerr = (jpegErrorManager*) cinfo->err;
     /* note : *(cinfo->err) is now equivalent to myerr->pub */
 
     /* output_message is a method to print an error message */
@@ -75,7 +75,7 @@ unsigned char *jpg_buffer;
 	
 	// Variables for the decompressor itself
 	struct jpeg_decompress_struct cinfo;
-
+	struct jpegErrorManager jerr;
 	// Variables for the output buffer, and how long each row is
 	unsigned long bmp_size;
 	unsigned char *bmp_buffer;
