@@ -295,15 +295,15 @@ int main()
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
 		write(uart0_filestream, (const void*) &filelen,sizeof(uint16_t));
-		//FILE* out = fopen ("tx.jpg","wb");
+		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t i=0, wrl;
 		while (i<filelen)
 		{
 			wrl = write(uart0_filestream, buffer + i,filelen - i);
-		//	fwrite(buffer + i, sizeof(char),wrl,out);
+			fwrite(buffer + i, sizeof(char),wrl,out);
 			i += wrl;
 		}
-		//fclose(out);
+		fclose(out);
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
