@@ -287,7 +287,7 @@ int main()
 	
 	uint16_t jpegSize;
 	unsigned char* jpegBuffer;
-	jpegBuffer = (unsigned char*)malloc(0x7FFF);
+	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*10000);
 	unsigned char rx;
 	uint16_t rxl;
 	for (;;) 
