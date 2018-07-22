@@ -244,19 +244,6 @@ void InitUART()
 
 int main()
 {/*
-	printf("Initing...");
-	ILI9341_Init();
-	printf("Done\n");
-	//HAL_Delay(500);
-
-	printf("Filling...");
-	ILI9341_Fill_Screen(WHITE);
-	printf("Done\n");
-	//HAL_Delay(500);
-	
-	rgb565_buffer = (unsigned char*)malloc(320*240*2);
-	printf("Buffer allocated\n");
-	//HAL_Delay(500);
 	//system("stty -F /dev/serial0 2000000");
 	HAL_Delay(1000);
 */	//FILE* uart = fopen("/dev/serial0","wb");
@@ -280,10 +267,6 @@ int main()
 		HAL_Delay(130);
 		
 		
-		/*printf("Drawing image...");
-		ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
-		printf("Done\n");*/
-		//HAL_Delay(500);
 		//begin = clock();
 		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
