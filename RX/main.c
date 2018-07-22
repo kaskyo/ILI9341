@@ -29,7 +29,7 @@ char jpegLastErrorMsg[JMSG_LENGTH_MAX];
 void jpegErrorExit (j_common_ptr cinfo)
 {
     /* cinfo->err actually points to a jpegErrorManager struct */
-    struct jpegErrorManager* myerr = (jpegErrorManager*) cinfo->err;
+    struct jpegErrorManager* myerr = (struct jpegErrorManager*)cinfo->err;
     /* note : *(cinfo->err) is now equivalent to myerr->pub */
 
     /* output_message is a method to print an error message */
