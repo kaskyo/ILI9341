@@ -372,7 +372,9 @@ int main()
 			if (jpegSize>0) {
 				if (readJPG("rx.jpg") == 0)
 					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+				
 			}
+			tcflush(uart0_filestream, TCIFLUSH);
 		}
 		/*printf("Reading JPG...");
 		readJPG("/home/pi/ILI9341/1.jpg");
