@@ -15,7 +15,7 @@
 #include <time.h>
 #include <string.h>
 
-#define BAUDRATE B1000000
+#define BAUDRATE B500000
 //#define ham
 
 unsigned char *rgb565_buffer;
@@ -123,7 +123,7 @@ void InitUART()
 	}
 	struct termios options;
 	tcgetattr(uart0_filestream, &options);
-	options.c_cflag = B500000 | CS8 | CLOCAL;		//<Set baud rate
+	options.c_cflag = BAUDRATE | CS8 | CLOCAL;		//<Set baud rate
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
