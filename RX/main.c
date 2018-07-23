@@ -17,7 +17,7 @@
 #include <setjmp.h>
 
 
-#define BAUDRATE B1000000
+#define BAUDRATE B500000
 //#define ham
 
 const unsigned char G = 0b00001011;
