@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <termios.h>		//Used for UART
 #include <time.h>
+#include <string.h>
 
 unsigned char *rgb565_buffer;
 
@@ -136,7 +137,7 @@ int main()
 		//clock_t end = clock();
 		//double timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("(in %f ms)\n\n",timespent);
-		//HAL_Delay(168);
+		HAL_Delay(168);
 		
 		
 		//begin = clock();
@@ -154,8 +155,8 @@ int main()
 		fclose(jpeg); // Close the file
 		for (uint16_t i=0; i<filelenH; i++)
 		{	
-			temp = Code(*(buffer + 4*i));
-			write (bufferH; temp ; 1);
+			temp = Code(*(buffer + i));
+			memcpy(bufferH + i, &temp, 1);
 		}
 		
 		
@@ -170,16 +171,16 @@ int main()
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
 		write(uart0_filestream, (const void*) &filelenH,sizeof(uint16_t));
-		//FILE* out = fopen ("tx.jpg","wb");
-		uint16_t i=0, wrl;
-		while (i<filelenH)
+		FILE* out = fopen ("tx.jpg","wb");
+		uint16_t j=0, wrl;
+		while (j<filelenH)
 		{
 			
-			wrl = write(uart0_filestream, bufferH + i,filelenH - i);
-			//fwrite(bufferH + i, sizeof(char),wrl,out);
-			i += wrl;
+			wrl = write(uart0_filestream, bufferH + j,filelenH - j);
+			fwrite(bufferH + j, sizeof(char),wrl,out);
+			j += wrl;
 		}
-		//fclose(out);
+		fclose(out);
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
