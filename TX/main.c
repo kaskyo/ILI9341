@@ -103,18 +103,10 @@ int main()
 		
 			while (j<filelen*8)
 			{
-				wrl = write(uart0_filestream, bufferRS + j,filelenH - j);
+				wrl = write(uart0_filestream, bufferRS + j,filelen*8 - j);
 				//fwrite(bufferH + j, sizeof(uint8_t),wrl,out);
 				j += wrl;
 			}
-		#else
-			while (j<filelen)
-			{
-				wrl = write(uart0_filestream, buffer + j,filelen - j);
-				fwrite(buffer + j, sizeof(uint8_t),wrl,out);
-				j += wrl;
-			}
-		#endif
 		fclose(out);
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
