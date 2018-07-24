@@ -185,7 +185,7 @@ int main()
 			receivedBeacon[i] = receivedBeacon[i+1];
 			//printf("%hhX",receivedBeacon[i]);
 		}
-		receivedBeacon[63] = rx;
+		receivedBeacon[63] = *rx;
 		
 		for (int i=0; i<8; i++) {
 			decodedBeacon[i] = RS152Decode(&receivedBeacon[i*8]);
