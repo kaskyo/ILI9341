@@ -215,8 +215,8 @@ int main()
 			{
 				read(uart0_filestream, &jpegBufferH, 2);
 				buf = Decode(jpegBufferH & 0x7f) | Decode((jpegBufferH >> 8) & 0x7f);
-				write(jpegBuffer, buf, 1);
-				//fwrite(jpegBuffer + i, sizeof(char), rxl, fp); 
+				//write(jpegBuffer, buf, 1);
+				fwrite(buf, sizeof(char), 1, fp); 
 				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 				i++;
 			}
