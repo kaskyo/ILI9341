@@ -211,10 +211,11 @@ int main()
 				j += wrl;
 			}
 		#else
-			while (i<filelen)
+			while (j<filelen)
 			{
-				wrl = write(uart0_filestream, buffer + i,filelen - i);
-				fwrite(buffer + i, sizeof(char),wrl,out);
+				wrl = write(uart0_filestream, buffer + j,filelen - j);
+				fwrite(buffer + j, sizeof(uint8_t),wrl,out);
+				j += wrl;
 			}
 		#endif
 		fclose(out);
