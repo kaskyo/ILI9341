@@ -19,6 +19,12 @@
 
 unsigned char *rgb565_buffer;
 
+
+unsigned char Code(unsigned char I) {
+  return I^(I<<1)^(I<<3);
+} 
+
+
 void readJPG(char* fn) {
 	
 	int rc, i, j;
@@ -250,8 +256,9 @@ int main()
 	InitUART();
 	FILE* jpeg;
 	unsigned char* buffer;
+	unsigned char* bufferH;
 	unsigned char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
-	
+	unsigned char temp;
 	for (;;) {
 
 		/*printf("Reading JPG...");
@@ -271,14 +278,24 @@ int main()
 		//begin = clock();
 		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
-		uint16_t filelen = ftell(jpeg);             // Get the current byte offset in the file		
+		uint16_t filelen = ftell(jpeg);
+		uint16_t filelenH = filelen*2;		// Get the current byte offset in the file		
 		rewind(jpeg);                      // Jump back to the beginning of the file
 
 		//printf("Filelen: %d\n",filelen);
 		buffer = (unsigned char *)malloc(filelen+100); // Enough memory for file + \0
+		bufferH = (unsigned char *)malloc(filelenH+100);
 
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
+		for (uint16_t i=0; i<filelenH; i++)
+		{	
+			temp = Code(*(buffer + 4*i));
+			write (bufferH; temp ; 1);
+		}
+		
+		
+		
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("File read (in %f ms)\n\n",timespent);
@@ -294,13 +311,14 @@ int main()
 		//begin = clock();
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
-		write(uart0_filestream, (const void*) &filelen,sizeof(uint16_t));
+		write(uart0_filestream, (const void*) &filelenH,sizeof(uint16_t));
 		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t i=0, wrl;
-		while (i<filelen)
+		while (i<filelenH)
 		{
-			wrl = write(uart0_filestream, buffer + i,filelen - i);
-			fwrite(buffer + i, sizeof(char),wrl,out);
+			
+			wrl = write(uart0_filestream, bufferH + i,filelenH - i);
+			fwrite(bufferH + i, sizeof(char),wrl,out);
 			i += wrl;
 		}
 		fclose(out);
@@ -308,6 +326,7 @@ int main()
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
 		free(buffer);
+		free(bufferH);
 		
 	}
 	free(rgb565_buffer);

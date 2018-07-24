@@ -19,6 +19,29 @@
 #include <string.h>
 #include <setjmp.h>
 
+const unsigned char G = 0b00001011;
+const unsigned char SER[7] = {0,1,3,2,6,4,5};
+
+unsigned char Decode(unsigned char I) {
+  unsigned char H = I;
+  unsigned char S;
+  unsigned char result = 0;
+  for (int i=3; i>=0; i--) {
+    if (I>=(1<<(i+3))) {
+      I = I ^ (G<<i);
+      result+=(1<<i);
+    }
+  }
+  S = I;
+  if (S == 0)
+    return result;
+  else {
+    H = (H^(1<<SER[S-1]))&0x7F;
+    return Decode(H);
+  }
+}
+
+
 struct jpegErrorManager {
     /* "public" fields */
     struct jpeg_error_mgr pub;
@@ -336,6 +359,9 @@ int main()
 	unsigned char receivedBeacon[8] = {0};
 	
 	uint16_t jpegSize;
+	uint32_t jpegSizeH;
+	uint16_t jpegBufferH;
+	unsigned char buf;
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
 	unsigned char rx;
@@ -356,16 +382,21 @@ int main()
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
 			//printf("I GOT A BEACON\n");
-			read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
+			read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint32_t));
+			jpegSize = (Decode((unsigned char)jpegSizeH&0x7F) | (Decode(((unsigned char)jpegSizeH>>8)&0x7F) << 4) | (Decode(((unsigned char)jpegSizeH>>16)&0x7F) << 8) |(Decode(((unsigned char)jpegSizeH>>24)&0x7F) << 12))/2;
 			//printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
 			FILE* fp=fopen("rx.jpg", "wb");
-			while (i < jpegSize) {
-				rxl = read(uart0_filestream, jpegBuffer + i, jpegSize - i);
-				fwrite(jpegBuffer + i, sizeof(char), rxl, fp); 
+			while (i < jpegSize) 
+			{
+				read(uart0_filestream, &jpegBufferH, 2);
+				buf = Decode(jpegBufferH & 0x7f) | Decode((jpegBufferH >> 8) & 0x7f);
+				write(jpegBuffer, buf, 1);
+				//fwrite(jpegBuffer + i, sizeof(char), rxl, fp); 
 				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
-				i += rxl;
+				i++;
 			}
+			fwrite(jpegBuffer, sizeof(char), jpegSize, fp);
 			fclose(fp);
 			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
 			//printf("Read %d bytes\n",i);
