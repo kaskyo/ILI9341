@@ -18,9 +18,17 @@
 unsigned char *rgb565_buffer;
 
 
-unsigned char Code(unsigned char I) {
+uint8_t Code(uint8_t I) {
   return I^(I<<1)^(I<<3);
 } 
+
+uint16_t Code8 (uint8_t G)
+{
+	uint8_t t1 = Code ( G & 0x0f);
+	uint8_t t2 = Code ( G >> 4 & 0x0f);
+	uint16_t t = t1 | (t2 << 8);
+	return t;
+}
 
 
 void readJPG(char* fn) {
@@ -83,14 +91,14 @@ void readJPG(char* fn) {
 	unsigned char r,g,b,r5,g6,b5,bt1,bt2;
 
 	
-	for (int i=0; i<width*height; i++)
+	for (uint32_t i=0; i<width*height; i++)
 	{
 		r = bmp_buffer[i*3];
 		g = bmp_buffer[i*3+1];
 		b = bmp_buffer[i*3+2];
-		r5 = (unsigned char)((uint16_t)r*31/255);
-		g6 = (unsigned char)((uint16_t)g*63/255);
-		b5 = (unsigned char)((uint16_t)b*32/255);
+		r5 = (uint8_t)((uint16_t)r*31/255);
+		g6 = (uint8_t)((uint16_t)g*63/255);
+		b5 = (uint8_t)((uint16_t)b*32/255);
 		
 		bt1 = (r5 << 3) | ((g6 >> 3) & 0x07);
 		bt2 = ((g6 << 5) & 0xE0) | (b5 & 0x1F);
@@ -127,10 +135,10 @@ int main()
 */	//FILE* uart = fopen("/dev/serial0","wb");
 	InitUART();
 	FILE* jpeg;
-	unsigned char* buffer;
-	unsigned char* bufferH;
-	unsigned char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
-	unsigned char temp1, temp2;
+	uint8_t* buffer;
+	uint8_t* bufferH;
+	uint8_t beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
+	uint8_t temp1, temp2;
 	for (;;) {
 
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
@@ -145,6 +153,7 @@ int main()
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
 		uint16_t filelen = ftell(jpeg);
 		uint16_t filelenH = filelen*2;		// Get the current byte offset in the file		
+		uint32_t filelenHx = 0;
 		rewind(jpeg);                      // Jump back to the beginning of the file
 
 		//printf("Filelen: %d\n",filelen);
@@ -172,14 +181,15 @@ int main()
 		//begin = clock();
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
-		write(uart0_filestream, (const void*) &filelenH,sizeof(uint16_t));
+		filelenHx = Code8((uint16_t)filelenH & 0xffff) | Code8((uint16_t)(filelenH  >> 16));
+		write(uart0_filestream, (const void*) &filelenHx,sizeof(uint32_t));
 		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t j=0, wrl;
 		while (j<filelenH)
 		{
 			
 			wrl = write(uart0_filestream, bufferH + j,filelenH - j);
-			fwrite(bufferH + j, sizeof(char),wrl,out);
+			fwrite(bufferH + j, sizeof(uint8_t),wrl,out);
 			j += wrl;
 		}
 		fclose(out);

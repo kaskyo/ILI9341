@@ -19,7 +19,7 @@
 const unsigned char G = 0b00001011;
 const unsigned char SER[7] = {0,1,3,2,6,4,5};
 
-unsigned char Decode(unsigned char I) {
+uint8_t Decode(uint8_t I) {
   unsigned char H = I;
   unsigned char S;
   unsigned char result = 0;
@@ -38,6 +38,13 @@ unsigned char Decode(unsigned char I) {
   }
 }
 
+uint8_t Decode8(uint16_t G)
+{
+	uint8_t t1 = (uint8_t) G & 0xff;
+	uint8_t t2 = (uint8_t) (G >> 8) & 0xff; 
+	uint8_t t = Decode(t1) | (Decode(t2) << 4);
+	return t;
+}
 
 struct jpegErrorManager {
     struct jpeg_error_mgr pub;
@@ -207,8 +214,11 @@ int main()
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
 			//printf("I GOT A BEACON\n");
-			read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint32_t));
-			jpegSize = (Decode((unsigned char)jpegSizeH&0x7F) | (Decode(((unsigned char)jpegSizeH>>8)&0x7F) << 4) | (Decode(((unsigned char)jpegSizeH>>16)&0x7F) << 8) |(Decode(((unsigned char)jpegSizeH>>24)&0x7F) << 12))/2;
+			for (uint8_t k = 0; k < 2; k++)
+			{				
+				read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint16_t));
+				jpegSize |= Decode(jpegSizeH) << (8 * k);
+			}
 			//printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
 			FILE* fp=fopen("rx.jpg", "wb");
