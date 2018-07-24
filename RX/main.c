@@ -214,10 +214,10 @@ int main()
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
 			//printf("I GOT A BEACON\n");
-			for (uint8_t k = 0; k < 2; k++)
+			for (uint8_t k = 0; k < 4; k++)
 			{				
-				read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint16_t));
-				jpegSize |= Decode(jpegSizeH) << (8 * k);
+				read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint8_t));
+				jpegSize |= Decode(jpegSizeH&0x7f) << (4 * k);
 			}
 			printf("Read %d bytes\n",jpegSize);
 			//printf("Size: %d\n", jpegSize);
