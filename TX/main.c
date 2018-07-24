@@ -181,8 +181,11 @@ int main()
 		//begin = clock();
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
-		filelenHx = Code8((uint16_t)filelenH & 0xffff) | Code8((uint16_t)(filelenH  >> 16));
-		write(uart0_filestream, (const void*) &filelenHx,sizeof(uint32_t));
+		for (uint8_t h = 0; h < 16; h=h+8)
+		{
+			filelenHx = Code8((filelenH >> h));
+			write(uart0_filestream, (const void*) &filelenHx,sizeof(uint16_t));
+		}
 		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t j=0, wrl;
 		while (j<filelenH)

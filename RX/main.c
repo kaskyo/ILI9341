@@ -193,7 +193,7 @@ int main()
 	uint32_t jpegSizeH;
 	uint8_t jpegBufferH;
 	uint8_t jpegBufferL;
-	unsigned char buf;
+	uint8_t buf;
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
 	unsigned char rx;
@@ -227,7 +227,7 @@ int main()
 				read(uart0_filestream, &jpegBufferL, 1);
 				read(uart0_filestream, &jpegBufferH, 1);
 				buf = (Decode(jpegBufferL & 0x7f) & 0x0f) | \
-					  (Decode(jpegBufferH & 0x7f) & 0x0f << 4);
+					  ((Decode(jpegBufferH & 0x7f) & 0x0f) << 4);
 				//write(jpegBuffer, buf, 1);
 				fwrite(&buf, sizeof(char), 1, fp); 
 				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
