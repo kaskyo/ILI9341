@@ -130,7 +130,7 @@ int main()
 	unsigned char* buffer;
 	unsigned char* bufferH;
 	unsigned char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
-	unsigned char temp;
+	unsigned char temp1, temp2;
 	for (;;) {
 
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
@@ -153,10 +153,12 @@ int main()
 
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
-		for (uint16_t i=0; i<filelenH; i++)
+		for (uint16_t i=0; i<filelen; i++)
 		{	
-			temp = Code(*(buffer + i));
-			memcpy(bufferH + i, &temp, 1);
+			temp1 = Code(buffer[i]&0x0f);
+			temp2 = Code((buffer[i]&0xf0)>>4);
+			bufferH[i*2] = temp1;
+			bufferH[i*2+1] = temp2;
 		}
 		
 		

@@ -184,7 +184,8 @@ int main()
 	
 	uint16_t jpegSize;
 	uint32_t jpegSizeH;
-	uint16_t jpegBufferH;
+	uint8_t jpegBufferH;
+	uint8_t jpegBufferL;
 	unsigned char buf;
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
@@ -213,8 +214,10 @@ int main()
 			FILE* fp=fopen("rx.jpg", "wb");
 			while (i < jpegSize) 
 			{
-				read(uart0_filestream, &jpegBufferH, 2);
-				buf = (Decode(jpegBufferH & 0x7f) & 0x0f) | (Decode((jpegBufferH >> 8) & 0x7f) << 4);
+				read(uart0_filestream, &jpegBufferL, 1);
+				read(uart0_filestream, &jpegBufferH, 1);
+				buf = (Decode(jpegBufferL & 0x7f) & 0x0f) | \
+					  (Decode(jpegBufferH & 0x7f) & 0x0f << 4);
 				//write(jpegBuffer, buf, 1);
 				fwrite(&buf, sizeof(char), 1, fp); 
 				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
