@@ -245,6 +245,7 @@ int main()
 			}
 			
 		}
+	jpegSize = 0;
 	}
 	free(rgb565_buffer);
 	//fclose(uart);
