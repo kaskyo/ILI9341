@@ -219,6 +219,7 @@ int main()
 				read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint16_t));
 				jpegSize |= Decode(jpegSizeH) << (8 * k);
 			}
+			printf("Read %d bytes\n",jpegSize);
 			//printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
 			FILE* fp=fopen("rx.jpg", "wb");
