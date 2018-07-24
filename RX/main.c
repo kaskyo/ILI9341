@@ -16,9 +16,14 @@
 #include <string.h>
 #include <setjmp.h>
 
+
+#define BAUDRATE B1000000
+//#define ham
+
 const unsigned char G = 0b00001011;
 const unsigned char SER[7] = {0,1,3,2,6,4,5};
 
+#ifdef ham
 uint8_t Decode(uint8_t I) {
   unsigned char H = I;
   unsigned char S;
@@ -45,6 +50,7 @@ uint8_t Decode8(uint16_t G)
 	uint8_t t = Decode(t1) | (Decode(t2) << 4);
 	return t;
 }
+#endif
 
 struct jpegErrorManager {
     struct jpeg_error_mgr pub;
@@ -162,7 +168,7 @@ void InitUART()
 	
 	struct termios options;
 	tcgetattr(uart0_filestream, &options);
-	options.c_cflag = B500000 | CS8 | CLOCAL | CREAD;		//<Set baud rate
+	options.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;		//<Set baud rate
 	options.c_iflag = IGNPAR;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
@@ -190,10 +196,13 @@ int main()
 	unsigned char receivedBeacon[8] = {0};
 	
 	uint16_t jpegSize;
+	
+	#ifdef ham
 	uint32_t jpegSizeH;
 	uint8_t jpegBufferH;
 	uint8_t jpegBufferL;
 	uint8_t buf;
+	#endif
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
 	unsigned char rx;
@@ -214,25 +223,33 @@ int main()
 		if (memcmp(beacon,receivedBeacon,8)==0)
 		{
 			//printf("I GOT A BEACON\n");
-			for (uint8_t k = 0; k < 4; k++)
-			{				
-				read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint8_t));
-				jpegSize |= Decode(jpegSizeH&0x7f) << (4 * k);
-			}
-			printf("Read %d bytes\n",jpegSize);
+			#ifdef ham
+				for (uint8_t k = 0; k < 4; k++)
+				{				
+					read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint8_t));
+					jpegSize |= Decode(jpegSizeH&0x7f) << (4 * k);
+				}
+			#else
+				read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
+			#endif
+			//printf("Read %d bytes\n",jpegSize);
 			//printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
 			FILE* fp=fopen("rx.jpg", "wb");
 			while (i < jpegSize) 
 			{
+				#ifdef ham
 				read(uart0_filestream, &jpegBufferL, 1);
 				read(uart0_filestream, &jpegBufferH, 1);
 				buf = (Decode(jpegBufferL & 0x7f) & 0x0f) | \
 					  ((Decode(jpegBufferH & 0x7f) & 0x0f) << 4);
-				//write(jpegBuffer, buf, 1);
-				fwrite(&buf, sizeof(char), 1, fp); 
-				//syslog(LOG_INFO, "Input: Read %d/%lu bytes", rc, jpg_size-i);
 				i++;
+				fwrite(&buf, sizeof(char), 1, fp); 
+				#else
+					rxl = read(uart0_filestream, jpegBuffer + i, jpegSize - i);
+					fwrite(jpegBuffer + i, sizeof(char), rxl, fp);
+					i += rxl;
+				#endif
 			}
 			fwrite(jpegBuffer, sizeof(char), jpegSize, fp);
 			fclose(fp);

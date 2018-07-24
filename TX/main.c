@@ -15,9 +15,12 @@
 #include <time.h>
 #include <string.h>
 
+#define BAUDRATE B1000000
+//#define ham
+
 unsigned char *rgb565_buffer;
 
-
+#ifdef ham
 uint8_t Code(uint8_t I) {
   return I^(I<<1)^(I<<3);
 } 
@@ -29,7 +32,7 @@ uint16_t Code8 (uint8_t G)
 	uint16_t t = t1 | (t2 << 8);
 	return t;
 }
-
+#endif
 
 void readJPG(char* fn) {
 	
@@ -136,9 +139,11 @@ int main()
 	InitUART();
 	FILE* jpeg;
 	uint8_t* buffer;
+	#ifdef ham
 	uint8_t* bufferH;
-	uint8_t beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
 	uint8_t temp1, temp2;
+	#endif
+	uint8_t beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
 	for (;;) {
 
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
@@ -152,24 +157,30 @@ int main()
 		jpeg = fopen("/home/pi/ILI9341/1.jpg","rb");
 		fseek(jpeg, 0, SEEK_END);          // Jump to the end of the file
 		uint16_t filelen = ftell(jpeg);
-		uint16_t filelenH = filelen*2;		// Get the current byte offset in the file		
-		uint32_t filelenHx = 0;
+		#ifdef ham
+			uint16_t filelenH = filelen*2;		// Get the current byte offset in the file		
+			uint32_t filelenHx = 0;
+		#endif
 		rewind(jpeg);                      // Jump back to the beginning of the file
 
 		//printf("Filelen: %d\n",filelen);
 		buffer = (unsigned char *)malloc(filelen+100); // Enough memory for file + \0
-		bufferH = (unsigned char *)malloc(filelenH+100);
-
+		#ifdef ham
+			bufferH = (unsigned char *)malloc(filelenH+100);
+		#endif
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
-		for (uint16_t i=0; i<filelen; i++)
-		{	
-			temp1 = Code(buffer[i]&0x0f);
-			temp2 = Code((buffer[i]&0xf0)>>4);
-			bufferH[i*2] = temp1;
-			bufferH[i*2+1] = temp2;
-		}
-		
+		#ifdef ham
+			for (uint16_t i=0; i<filelen; i++)
+			{	
+				temp1 = Code(buffer[i]&0x0f);
+				temp2 = Code((buffer[i]&0xf0)>>4);
+				bufferH[i*2] = temp1;
+				bufferH[i*2+1] = temp2;
+			}
+		#else
+			
+		#endif
 		
 		
 		//end = clock();
@@ -181,27 +192,39 @@ int main()
 		//begin = clock();
 		write(uart0_filestream, (const void*) &beacon,8);
 		//HAL_Delay(500);
+		#ifdef ham
 		for (uint8_t h = 0; h < 16; h=h+8)
 		{
 			filelenHx = Code8((filelenH >> h));
 			write(uart0_filestream, (const void*) &filelenHx,sizeof(uint16_t));
 		}
+		#else
+			write(uart0_filestream, (const void*) &filelen,sizeof(uint16_t));
+		#endif
 		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t j=0, wrl;
-		while (j<filelenH)
-		{
-			
-			wrl = write(uart0_filestream, bufferH + j,filelenH - j);
-			fwrite(bufferH + j, sizeof(uint8_t),wrl,out);
-			j += wrl;
-		}
+		#ifdef ham
+			while (j<filelenH)
+			{
+				wrl = write(uart0_filestream, bufferH + j,filelenH - j);
+				fwrite(bufferH + j, sizeof(uint8_t),wrl,out);
+				j += wrl;
+			}
+		#else
+			while (i<filelen)
+			{
+				wrl = write(uart0_filestream, buffer + i,filelen - i);
+				fwrite(buffer + i, sizeof(char),wrl,out);
+			}
+		#endif
 		fclose(out);
 		//end = clock();
 		//timespent =(double)(end-begin)/(CLOCKS_PER_SEC/1000);
 		//printf("Sent. (in %f ms)\n\n",timespent);
 		free(buffer);
-		free(bufferH);
-		
+		#ifdef ham
+			free(bufferH);
+		#endif
 	}
 	free(rgb565_buffer);
 	//fclose(uart);
