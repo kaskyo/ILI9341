@@ -70,14 +70,10 @@ int main()
 		bufferRS = (uint64_t*)malloc(filelen*8+96);
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
-		#ifdef ham
 			for (uint16_t i=0; i<filelen; i++)
 			{	
 				bufferRS[i] = RS152Code(buffer[i]);
 			}
-		#else
-			
-		#endif
 		
 		
 		//end = clock();
@@ -93,8 +89,8 @@ int main()
 			write(uart0_filestream, (const void*) RS152Code(beacon[i]),8);
 		//HAL_Delay(500);
 		
-		write(uart0_filestream, (const void*) RS152Code((filelen&0xff00)>>8),8);
 		write(uart0_filestream, (const void*) RS152Code(filelen&0xff),8);
+		write(uart0_filestream, (const void*) RS152Code((filelen&0xff00)>>8),8);
 		
 		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t j=0, wrl;
@@ -103,7 +99,7 @@ int main()
 		
 			while (j<filelen*8)
 			{
-				wrl = write(uart0_filestream, bufferRS + j,filelen*8 - j);
+				wrl = write(uart0_filestream, buf1 + j,filelen*8 - j);
 				//fwrite(bufferH + j, sizeof(uint8_t),wrl,out);
 				j += wrl;
 			}
