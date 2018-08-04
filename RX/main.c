@@ -154,6 +154,7 @@ int main()
 
 	printf("Filling...");
 	ILI9341_Draw_Image((const char*)snow_tiger,SCREEN_VERTICAL_2);
+//	ILI9341_Fill_Screen(RED);
 	printf("Done\n");
 	
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
