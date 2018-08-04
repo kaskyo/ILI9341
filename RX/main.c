@@ -16,41 +16,11 @@
 #include <string.h>
 #include <setjmp.h>
 
+#include "RS152.h"
 
-#define BAUDRATE B500000
+#define BAUDRATE B1000000
 //#define ham
 
-const unsigned char G = 0b00001011;
-const unsigned char SER[7] = {0,1,3,2,6,4,5};
-
-#ifdef ham
-uint8_t Decode(uint8_t I) {
-  unsigned char H = I;
-  unsigned char S;
-  unsigned char result = 0;
-  for (int i=3; i>=0; i--) {
-    if (I>=(1<<(i+3))) {
-      I = I ^ (G<<i);
-      result+=(1<<i);
-    }
-  }
-  S = I;
-  if (S == 0)
-    return result;
-  else {
-    H = (H^(1<<SER[S-1]))&0x7F;
-    return Decode(H);
-  }
-}
-
-uint8_t Decode8(uint16_t G)
-{
-	uint8_t t1 = (uint8_t) G & 0xff;
-	uint8_t t2 = (uint8_t) (G >> 8) & 0xff; 
-	uint8_t t = Decode(t1) | (Decode(t2) << 4);
-	return t;
-}
-#endif
 
 struct jpegErrorManager {
     struct jpeg_error_mgr pub;
@@ -192,17 +162,13 @@ int main()
 	InitUART();
 	FILE* jpeg;
 	char* buffer;
-	unsigned char beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
-	unsigned char receivedBeacon[8] = {0};
-	
+	uint8_t beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
+	uint8_t receivedBeacon[64] = {0};
+	uint8_t decodedBeacon[8] = {0};
 	uint16_t jpegSize;
-	
-	#ifdef ham
-	uint32_t jpegSizeH;
-	uint8_t jpegBufferH;
-	uint8_t jpegBufferL;
+	uint64_t jpegSizeRS;
 	uint8_t buf;
-	#endif
+	uint64_t jpegBufferRS;
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
 	unsigned char rx;
@@ -212,49 +178,41 @@ int main()
 		
 		rxl = read(uart0_filestream, (void*)&rx, 1);
 		
-		for (int i=0; i<7; i++)
+		for (int i=0; i<63; i++)
 		{
 			receivedBeacon[i] = receivedBeacon[i+1];
 			//printf("%hhX",receivedBeacon[i]);
 		}
-		receivedBeacon[7] = rx;
+		receivedBeacon[63] = rx;
+		
+		for (int i=0; i<8; i++) {
+			decodedBeacon[i] = RS152DecodePtr(receivedBeacon[i*8]);
+		}
+		
 		//printf("%hhX\n",rx);
 		
-		if (memcmp(beacon,receivedBeacon,8)==0)
+		if (memcmp(beacon,decodedBeacon,8)==0)
 		{
-			//printf("I GOT A BEACON\n");
-			#ifdef ham
-				for (uint8_t k = 0; k < 4; k++)
-				{				
-					read(uart0_filestream, (void*)&jpegSizeH, sizeof(uint8_t));
-					jpegSize |= Decode(jpegSizeH&0x7f) << (4 * k);
-				}
-			#else
-				read(uart0_filestream, (void*)&jpegSize, sizeof(uint16_t));
-			#endif
+			printf("I GOT A BEACON\n");
+			for (uint8_t k = 0; k < 2; k++)
+			{				
+				read(uart0_filestream, (void*)&jpegSizeRS, sizeof(uint64_t));
+				jpegSize |= RS152Decode(jpegSizeRS) << (8 * k);
+			}
 			//printf("Read %d bytes\n",jpegSize);
-			//printf("Size: %d\n", jpegSize);
+			printf("Size: %d\n", jpegSize);
 			uint16_t i = 0;
 			FILE* fp=fopen("rx.jpg", "wb");
 			while (i < jpegSize) 
 			{
-				#ifdef ham
-				read(uart0_filestream, &jpegBufferL, 1);
-				read(uart0_filestream, &jpegBufferH, 1);
-				buf = (Decode(jpegBufferL & 0x7f) & 0x0f) | \
-					  ((Decode(jpegBufferH & 0x7f) & 0x0f) << 4);
+				read(uart0_filestream, &jpegBufferRS, 8);
+				buf = RS152Decode(jpegBufferRS);
 				i++;
-				fwrite(&buf, sizeof(char), 1, fp); 
-				#else
-					rxl = read(uart0_filestream, jpegBuffer + i, jpegSize - i);
-					fwrite(jpegBuffer + i, sizeof(char), rxl, fp);
-					i += rxl;
-				#endif
+				fwrite(&buf, sizeof(char), 1, fp);
 			}
-			fwrite(jpegBuffer, sizeof(char), jpegSize, fp);
 			fclose(fp);
 			//rxl = read(uart0_filestream, (void*)jpegBuffer, jpegSize);
-			//printf("Read %d bytes\n",i);
+			printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
 				if (readJPG("rx.jpg") == 0)
 					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);

@@ -120,6 +120,37 @@ uint8_t RS152Decode(uint64_t w)
     return out;
 }
 
+uint8_t RS152DecodePtr(uint8_t* W)
+{
+	uint64_t* w = (uint64_t*)W;
+    uint64_t deinterleaved = deinterleave(*w);
+    printf("Deinterleaved: \t");
+    printBin(deinterleaved);
+    uint8_t out = 0;
+    uint64_t word;
+    uint8_t min, minW;
+    for (int i=0; i<4; i++)
+    {
+        word = (deinterleaved>>(15*i))&0x7FFF;
+        min = 16; minW = -1;
+        for (int j=0; j<4; j++)
+        {
+            int d = distance(word,G[j]);
+            if (d<min)
+            {
+                min = d;
+                minW = j;
+            }
+        }
+        out |= minW << (i*2);
+    }
+    printf("Resulting byte:\t");
+    printBin(out);
+    return out;
+}
+
+
+
 int distance64 (uint64_t a, uint64_t b)
 {
     uint64_t c = a ^ b;
