@@ -172,12 +172,13 @@ int main()
 	uint64_t jpegBufferRS;
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
-	unsigned char rx;
+	unsigned char* rx;
+	rx = (unsigned char*)malloc(sizeof(unsigned char));
 	uint16_t rxl;
 	for (;;) 
 	{
 		
-		rxl = read(uart0_filestream, (void*)&rx, 1);
+		rxl = read(uart0_filestream, (void*)rx, 1);
 		
 		for (int i=0; i<63; i++)
 		{
