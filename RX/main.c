@@ -257,7 +257,7 @@ int main()
 			//printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
 				if (readJPG("rx.jpg") == 0)
-					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_1);
 				
 			}
 			
