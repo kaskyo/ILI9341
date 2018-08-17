@@ -183,7 +183,7 @@ int main()
 	printf("Done\n");
 
 	printf("Filling...");
-	ILI9341_Draw_Image((const char*)snow_tiger,SCREEN_VERTICAL_2);
+	ILI9341_Draw_Image((const char*)snow_tiger,SCREEN_HORIZONTAL_1);
 	printf("Done\n");
 	
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
@@ -257,7 +257,7 @@ int main()
 			//printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
 				if (readJPG("rx.jpg") == 0)
-					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_1);
 				
 			}
 			
