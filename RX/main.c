@@ -183,7 +183,7 @@ int main()
 	printf("Done\n");
 
 	printf("Filling...");
-	ILI9341_Draw_Image((const char*)orion,SCREEN_HORIZONTAL_1);
+	ILI9341_Draw_Image((const char*)orion,SCREEN_HORIZONTAL_2);
 	printf("Done\n");
 	
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
