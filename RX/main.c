@@ -1,7 +1,7 @@
 #include "ILI9341_STM32_Driver.h"
 #include "ILI9341_GFX.h"
 #include "stdio.h"
-#include "snow_tiger.h"
+#include "orion.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -183,7 +183,7 @@ int main()
 	printf("Done\n");
 
 	printf("Filling...");
-	ILI9341_Draw_Image((const char*)snow_tiger,SCREEN_HORIZONTAL_1);
+	ILI9341_Draw_Image((const char*)orion,SCREEN_HORIZONTAL_1);
 	printf("Done\n");
 	
 	rgb565_buffer = (unsigned char*)malloc(320*240*2);
