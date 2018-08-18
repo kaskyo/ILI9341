@@ -48,6 +48,9 @@ int main()
 	uint64_t* bufferRS;
 	
 	uint8_t beacon[8] = { 'P', 'e', 't', 'o', 'u', 'c', 'h', '\0' };
+	uint8_t encbeacon[64];
+	for (int i=0; i<8; i++)
+        RS152Code(beacon[i], &(encbeacon[i*8]));
 	for (;;) {
 
 		system("/home/pi/ILI9341/cam/do_caputure.sh");
@@ -70,10 +73,11 @@ int main()
 		bufferRS = (uint64_t*)malloc(filelen*8+96);
 		fread(buffer, filelen, 1, jpeg); // Read in the entire file
 		fclose(jpeg); // Close the file
-			for (uint16_t i=0; i<filelen; i++)
-			{	
-				bufferRS[i] = RS152Code(buffer[i]);
-			}
+		
+		for (uint16_t i=0; i<filelen; i++)
+		{	
+			RS152Code(buffer[i],&bufferRS[i*8]);
+		}
 		
 		
 		//end = clock();
@@ -85,12 +89,12 @@ int main()
 		//begin = clock();
 		
 		// Encode beacon too
-		for (int i=0; i<8; i++)
-			write(uart0_filestream, (const void*) RS152Code(beacon[i]),8);
+		write(uart0_filestream, (const void*) encbeacon,64);
 		//HAL_Delay(500);
-		
-		write(uart0_filestream, (const void*) RS152Code(filelen&0xff),8);
-		write(uart0_filestream, (const void*) RS152Code((filelen&0xff00)>>8),8);
+		uint8_t filelenH[16];
+		RS152Code((filelen&0xff00)>>8),&filelenH[8]);
+		RS152Code(filelen&0xff,&(filelenH));
+		write(uart0_filestream, (const void*) filelenH,16);
 		
 		FILE* out = fopen ("tx.jpg","wb");
 		uint16_t j=0, wrl;

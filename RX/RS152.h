@@ -3,6 +3,5 @@
 #include <stdint.h>
 
 void GenerateInttables();
-uint64_t RS152Code(uint8_t byte);
-uint8_t RS152Decode(uint64_t w);
-uint8_t RS152DecodePtr(uint8_t* W);
+void RS152Code(uint8_t byte, uint8_t* ptr)
+uint8_t RS152Decode(uint8_t* w)

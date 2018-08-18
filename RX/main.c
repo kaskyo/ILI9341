@@ -167,9 +167,9 @@ int main()
 	uint8_t receivedBeacon[64] = {0};
 	uint8_t decodedBeacon[8] = {0};
 	uint16_t jpegSize;
-	uint64_t jpegSizeRS;
+	uint8_t jpegSizeRS[8];
 	uint8_t buf;
-	uint64_t jpegBufferRS;
+	uint8_t jpegBufferRS[8];
 	unsigned char* jpegBuffer;
 	jpegBuffer = (unsigned char*)malloc(sizeof(unsigned char)*0x10000);
 	unsigned char* rx;
@@ -188,7 +188,7 @@ int main()
 		receivedBeacon[63] = rx;
 		
 		for (int i=0; i<8; i++) {
-			decodedBeacon[i] = RS152DecodePtr(receivedBeacon[i*8]);
+			decodedBeacon[i] = RS152Decode(&receivedBeacon[i*8]);
 		}
 		
 		//printf("%hhX\n",rx);
@@ -198,7 +198,7 @@ int main()
 			printf("I GOT A BEACON\n");
 			for (uint8_t k = 0; k < 2; k++)
 			{				
-				read(uart0_filestream, (void*)&jpegSizeRS, sizeof(uint64_t));
+				read(uart0_filestream, (void*)&jpegSizeRS, 8);
 				jpegSize |= RS152Decode(jpegSizeRS) << (8 * k);
 			}
 			//printf("Read %d bytes\n",jpegSize);
@@ -217,7 +217,7 @@ int main()
 			printf("Read %d bytes\n",i);
 			if (jpegSize>0) {
 				if (readJPG("rx.jpg") == 0)
-					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_2);
+					ILI9341_Draw_Image((const char*)rgb565_buffer,SCREEN_HORIZONTAL_1);
 				
 			}
 			
